@@ -27,10 +27,9 @@
 <path d="M89 306l38 -18h274l-38 18z" fill="#ded3d1" stroke="#ffffff" stroke-width=".6"/><path d="M363 306l38 -18v12l-38 18z" fill="#88736f"/><path d="M89 306h274v12H89z" fill="#ab9390"/>
 <path d="M408 300h16" stroke="#ab9390"/>
 <text x="432" y="305" fill="#717c7e" font-size="14" font-weight="400" text-anchor="start">Day 20</text>
-<path d="M210 184L233 246M280 184L257 246" fill="none" stroke="#68757b" stroke-width="1.5"/>
-<rect x="168" y="246" width="154" height="10" rx="1" fill="#4c5b63"/>
-<path d="M192 256V284" stroke="#68757b" stroke-width="1.6"/><rect x="174" y="288" width="36" height="7" fill="#50676f"/><ellipse cx="192" cy="288" rx="18" ry="5" fill="#91a2a6"/><ellipse cx="192" cy="295" rx="18" ry="4" fill="#50676f"/>
-<path d="M298 256V284" stroke="#68757b" stroke-width="1.6"/><rect x="280" y="288" width="36" height="7" fill="#50676f"/><ellipse cx="298" cy="288" rx="18" ry="5" fill="#91a2a6"/><ellipse cx="298" cy="295" rx="18" ry="4" fill="#50676f"/>
+<path d="M245 184V275" fill="none" stroke="#51595b" stroke-width="1.5"/>
+<path d="M237 277L221 292H269L253 277Z" fill="#777e80" stroke="#353e42" stroke-width="1.2"/>
+<ellipse cx="245" cy="292" rx="24" ry="7" fill="#a58a34" stroke="#353e42" stroke-width="1.5"/><path d="M237 277V290M253 277V290" stroke="#4b5356" stroke-width="1"/>
 <path d="M441 286h-12v45h12" fill="none" stroke="#b8483f" stroke-width="1.6"/>
 <text x="461" y="284" fill="#b8483f" font-size="12" font-weight="500" text-anchor="start">Blocks access</text>
 <path d="M78 340h-16v39h55" fill="none" stroke="#b98837" stroke-width="1.4"/>
@@ -47,10 +46,9 @@
 <path d="M691 274l38 -18h274l-38 18z" fill="#dcb773" stroke="#ffffff" stroke-width=".6"/><path d="M965 274l38 -18v12l-38 18z" fill="#976f2e"/><path d="M691 274h274v12H691z" fill="#b98837"/>
 <path d="M1010 268h16" stroke="#b98837"/>
 <text x="1034" y="273" fill="#996e2c" font-size="14" font-weight="600" text-anchor="start">Day 10</text>
-<path d="M812 184L835 214M882 184L859 214" fill="none" stroke="#68757b" stroke-width="1.5"/>
-<rect x="770" y="214" width="154" height="10" rx="1" fill="#4c5b63"/>
-<path d="M794 224V252" stroke="#68757b" stroke-width="1.6"/><rect x="776" y="256" width="36" height="7" fill="#50676f"/><ellipse cx="794" cy="256" rx="18" ry="5" fill="#91a2a6"/><ellipse cx="794" cy="263" rx="18" ry="4" fill="#50676f"/>
-<path d="M900 224V252" stroke="#68757b" stroke-width="1.6"/><rect x="882" y="256" width="36" height="7" fill="#50676f"/><ellipse cx="900" cy="256" rx="18" ry="5" fill="#91a2a6"/><ellipse cx="900" cy="263" rx="18" ry="4" fill="#50676f"/>
+<path d="M847 184V243" fill="none" stroke="#51595b" stroke-width="1.5"/>
+<path d="M839 245L823 260H871L855 245Z" fill="#777e80" stroke="#353e42" stroke-width="1.2"/>
+<ellipse cx="847" cy="260" rx="24" ry="7" fill="#a58a34" stroke="#353e42" stroke-width="1.5"/><path d="M839 245V258M855 245V258" stroke="#4b5356" stroke-width="1"/>
 <path d="M811 290V307M819 290V307M827 290V307" stroke="#b98837" stroke-width="1" stroke-dasharray="3 3" opacity=".6"/>
 <text x="847" y="301" fill="#27766c" font-size="12" font-weight="500" text-anchor="start">Day 10 retrieved first</text>
 <text x="126" y="416" fill="#65716e" font-size="14" font-weight="400" text-anchor="start">Later-due plates must be moved out of the way.</text>
