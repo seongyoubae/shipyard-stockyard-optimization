@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="792pt" height="273.6pt" viewBox="0 0 792 273.6" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-04T09:10:17.627502</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 273.6 
+L 792 273.6 
+L 792 0 
+L 0 0 
+z
+" style="fill: #f8fafc"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 56.376 228.564 
+L 291.852 228.564 
+L 291.852 193.386 
+L 56.376 193.386 
+z
+" clip-path="url(#pc0e86e8e87)" style="fill: #f97316; stroke: #ffffff; stroke-width: 2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 56.376 182.562 
+L 291.852 182.562 
+L 291.852 147.384 
+L 56.376 147.384 
+z
+" clip-path="url(#pc0e86e8e87)" style="fill: #2563eb; stroke: #ffffff; stroke-width: 2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 56.376 136.56 
+L 291.852 136.56 
+L 291.852 101.382 
+L 56.376 101.382 
+z
+" clip-path="url(#pc0e86e8e87)" style="fill: #2563eb; stroke: #ffffff; stroke-width: 2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 322.236 79.026945 
+Q 322.236 102.73465 322.236 125.324321 
+" clip-path="url(#pc0e86e8e87)" style="fill: none; stroke: #64748b; stroke-linecap: round"/>
+    <path d="M 325.836 118.124321 
+L 322.236 125.324321 
+L 318.636 118.124321 
+z
+" clip-path="url(#pc0e86e8e87)" style="fill: #64748b; stroke: #64748b; stroke-linecap: round"/>
+   </g>
+   <g id="text_1">
+    <text style="font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="174.114" y="214.28625" transform="rotate(-0 174.114 214.28625)">Outbound day 10</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="174.114" y="168.28425" transform="rotate(-0 174.114 168.28425)">Outbound day 30</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="174.114" y="122.28225" transform="rotate(-0 174.114 122.28225)">Outbound day 20</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #64748b" x="56.376" y="66.204" transform="rotate(-0 56.376 66.204)">TOP-ONLY ACCESS</text>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #334155" x="56.376" y="261.036" transform="rotate(-0 56.376 261.036)">Earlier-due plate is buried</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #0f172a" x="10.8" y="22.32" transform="rotate(-0 10.8 22.32)">Order interference</text>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="patch_6">
+    <path d="M 446.976 228.564 
+L 682.452 228.564 
+L 682.452 193.386 
+L 446.976 193.386 
+z
+" clip-path="url(#p79853d38bf)" style="fill: #2563eb; stroke: #ffffff; stroke-width: 2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 446.976 182.562 
+L 682.452 182.562 
+L 682.452 147.384 
+L 446.976 147.384 
+z
+" clip-path="url(#p79853d38bf)" style="fill: #2563eb; stroke: #ffffff; stroke-width: 2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 446.976 136.56 
+L 682.452 136.56 
+L 682.452 101.382 
+L 446.976 101.382 
+z
+" clip-path="url(#p79853d38bf)" style="fill: #f97316; stroke: #ffffff; stroke-width: 2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 712.836 79.026945 
+Q 712.836 102.73465 712.836 125.324321 
+" clip-path="url(#p79853d38bf)" style="fill: none; stroke: #64748b; stroke-linecap: round"/>
+    <path d="M 716.436 118.124321 
+L 712.836 125.324321 
+L 709.236 118.124321 
+z
+" clip-path="url(#p79853d38bf)" style="fill: #64748b; stroke: #64748b; stroke-linecap: round"/>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="564.714" y="214.28625" transform="rotate(-0 564.714 214.28625)">Outbound day 30</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="564.714" y="168.28425" transform="rotate(-0 564.714 168.28425)">Outbound day 20</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="564.714" y="122.28225" transform="rotate(-0 564.714 122.28225)">Outbound day 10</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #64748b" x="446.976" y="66.204" transform="rotate(-0 446.976 66.204)">TOP-ONLY ACCESS</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #334155" x="446.976" y="261.036" transform="rotate(-0 446.976 261.036)">Earlier-due plate is accessible</text>
+   </g>
+   <g id="text_12">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #0f172a" x="401.4" y="22.32" transform="rotate(-0 401.4 22.32)">Retrieval-aware stacking</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pc0e86e8e87">
+   <rect x="10.8" y="28.32" width="379.8" height="227.304"/>
+  </clipPath>
+  <clipPath id="p79853d38bf">
+   <rect x="401.4" y="28.32" width="379.8" height="227.304"/>
+  </clipPath>
+ </defs>
+</svg>
