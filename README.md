@@ -29,7 +29,9 @@
 >
 > 산업 운영 문제를 AI와 수리최적화로 연결하는 연구 구현입니다
 
-![Steel plate stacking and retrieval priority](docs/stockyard.svg)
+![Illustrative example of retrieval interference](docs/stockyard.svg)
+
+*반출 간섭 예시: 먼저 반출할 강재가 아래에 묻히면 간섭이 발생합니다. 두 그림은 적치 순서의 비교 예시입니다.*
 
 ## Project Highlights
 
@@ -56,19 +58,6 @@
 ### 3. PPO로 순차 의사결정 학습
 
 간섭의 변화와 새로 생성된 간섭, 반출일 차이를 보상에 반영합니다. PPO의 clipped objective와 GAE를 사용하며, value loss·entropy regularization·gradient clipping을 함께 적용합니다.
-
-```mermaid
-flowchart TD
-    E["Stockyard environment"] --> S["Pile state and action masks"]
-    S --> G["Priority-aware GRU"]
-    G --> A["Actor: source and destination"]
-    G --> V["Critic: state value"]
-    A --> E
-    E --> R["Blocking-based reward"]
-    R --> P["PPO update"]
-    V --> P
-    P --> G
-```
 
 ## Optimization Benchmarks
 
