@@ -1,64 +1,135 @@
+<div align="center">
+
 # Shipyard Stockyard Optimization
 
-### 조선소 강재 적치·반출 간섭 최소화를 위한 강화학습 기반 최적화
+### Reinforcement Learning for Industrial Operations
 
-**현장 운영 문제를 환경·제약·보상으로 모델링하고, priority-aware GRU와 PPO로 재배치 의사결정을 학습한 석사 연구의 공개용 포트폴리오입니다**
+**조선소 강재 적치장의 반출 간섭을 줄이는 AI 기반 재배치 의사결정**
 
-`Python` · `PyTorch` · `PPO` · `GRU` · `Operations Research` · `Simulation`
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-Deep%20Reinforcement%20Learning-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)
+![PPO](https://img.shields.io/badge/Algorithm-PPO-2563EB?style=flat-square)
+![Optimization](https://img.shields.io/badge/Domain-Industrial%20Optimization-0F766E?style=flat-square)
 
-![Problem illustration](docs/stockyard.svg)
+[Overview](#overview) · [Approach](#approach) · [Quick Start](#quick-start) · [Code](#repository-guide) · [Technical Notes](docs/METHODOLOGY.md)
 
-## 프로젝트를 1분 안에 이해하기
+</div>
 
-강재가 여러 층으로 쌓인 적치장에서는 먼저 반출할 강재 위에 나중에 반출할 강재가 놓이면 추가 이동이 필요합니다. 이 프로젝트는 **어느 출발지의 최상단 강재를 선택해 어느 도착지에 적치할지** 결정하여, 재배치 후 반출 순서 간섭을 줄이는 문제를 다룹니다.
+---
 
-| 항목 | 구현 내용 |
-|---|---|
-| 의사결정 | 출발지 pile 선택 + 도착지 pile 선택 |
-| 제약조건 | 최상단 강재만 이동, 도착지 적재 높이 제한, 유효 행동 마스킹 |
-| 상태 | 상단 강재의 반출일, 깊은 층의 요약 통계, 입고 예정 정보, 시간, pile 유형, 간섭 정보 |
-| 모델 | 반출 우선순위를 결합하는 GRU encoder + actor/critic |
-| 학습 | PPO clipped objective, GAE, value loss, entropy regularization |
-| 평가 | 최종 blocking pair 수, 이동 수, 실행시간, 종료 상태 |
-| 비교 방법 | Random, EDD–MOD, SOP–MFB, SA, ACO, Gurobi MIP |
+## Overview
 
-## 이 코드에서 확인할 수 있는 역량
+**어디에 쌓느냐가, 다음 작업의 효율을 결정합니다**
 
-- **산업 문제의 수학적 모델링**: 적치 순서와 반출일을 비교해 간섭 지표를 정의하고, 이동·용량 제약을 환경에 반영
-- **강화학습 구현**: 상태 설계, 행동 마스킹, reward shaping, PPO 학습·평가 연결
-- **시계열·우선순위 표현 학습**: 반출 정보와 pile 표현을 결합하는 GRU 및 여러 encoder 변형 구현
-- **최적화 비교 실험**: 규칙 기반 방법, 메타휴리스틱, 수리최적화를 공통 문제와 지표로 비교
-- **재현 가능한 코드 정리**: 역할별 패키지, 합성 데이터, 실행 명령, 테스트, 결과 시각화
+조선소 강재 적치장에서는 먼저 반출해야 할 강재 위에 나중에 사용할 강재가 쌓이면 추가 이동이 발생합니다. 적재 공간과 이동 제약을 지키면서 반출 순서까지 고려해야 하므로, 개별 강재의 적치 선택은 이후 작업과 연결되는 의사결정입니다.
 
-원본 연구 코드에서 가져온 알고리즘과 공개용 실행 편의를 위해 추가한 코드를 구분한 [구현 이력](docs/PROVENANCE.md)을 제공합니다.
+이 프로젝트는 석사과정에서 수행한 **조선소 강재 적치·반출 간섭 최소화 연구**를 바탕으로, 적치장 운영을 강화학습 환경으로 모델링하고 **반출 우선순위를 반영하는 GRU와 PPO**를 결합해 재배치 정책을 학습합니다.
 
-## 빠른 실행
+> **문제 정의 → 환경 모델링 → 정책 학습 → 최적화 알고리즘 비교**
+>
+> 산업 운영 문제를 AI와 수리최적화로 연결하는 연구 구현입니다
 
-Python 3.10 이상에서 저장소 루트 기준으로 실행합니다. CPU만으로 데모를 실행할 수 있습니다. 기본 예제는 강재 24장, 출발지 4개, 도착지 4개입니다.
+![Steel plate stacking and retrieval priority](docs/stockyard.svg)
+
+## Project Highlights
+
+| 핵심 요소 | 설계 및 구현 |
+| :--- | :--- |
+| **현장 제약 모델링** | 최상단 강재 이동, 적재 높이 제한, 동적 입고를 반영한 적치장 환경 |
+| **우선순위 표현 학습** | 반출일 정보와 pile 표현을 결합하는 priority-aware GRU encoder |
+| **강화학습 의사결정** | 출발지·도착지 선택, 유효 행동 마스킹, PPO 기반 actor–critic 학습 |
+| **다각도 비교** | Heuristic · Simulated Annealing · Ant Colony Optimization · Gurobi MIP |
+| **실험 파이프라인** | 합성 시나리오 생성부터 학습·평가·결과 시각화까지 연결 |
+
+## Approach
+
+### 1. 운영 문제를 학습 환경으로
+
+강재별 반출 우선순위와 pile 상태를 관측하고, **어느 출발지의 최상단 강재를 어느 도착지에 옮길지** 결정합니다. 비어 있는 출발지와 용량을 초과한 도착지는 행동 마스크로 제외합니다.
+
+목표 지표는 재배치 후의 **blocking pair**입니다. 아래 강재가 위 강재보다 먼저 반출되어야 하는 조합을 세어, 적치 상태의 반출 순서 간섭을 정량화합니다.
+
+### 2. 반출 우선순위를 정책에 반영
+
+상단 강재의 반출일과 깊은 층의 요약 통계, 예정 입고 정보 등을 상태로 구성합니다. Priority-aware GRU는 반출 우선순위와 pile embedding을 결합하고, actor–critic 모델은 이를 바탕으로 이동 정책과 상태 가치를 계산합니다.
+
+### 3. PPO로 순차 의사결정 학습
+
+간섭의 변화와 새로 생성된 간섭, 반출일 차이를 보상에 반영합니다. PPO의 clipped objective와 GAE를 사용하며, value loss·entropy regularization·gradient clipping을 함께 적용합니다.
+
+```mermaid
+flowchart TD
+    E["Stockyard environment"] --> S["Pile state and action masks"]
+    S --> G["Priority-aware GRU"]
+    G --> A["Actor: source and destination"]
+    G --> V["Critic: state value"]
+    A --> E
+    E --> R["Blocking-based reward"]
+    R --> P["PPO update"]
+    V --> P
+    P --> G
+```
+
+## Optimization Benchmarks
+
+같은 시나리오에서 서로 다른 의사결정 방법을 비교할 수 있도록 평가 코드를 구성했습니다.
+
+| 방법 | 접근 방식 |
+| :--- | :--- |
+| **Random** | 유효한 출발지와 도착지를 무작위 선택 |
+| **EDD–MOD / SOP–MFB** | 반출 우선순위와 적치 상태를 활용하는 규칙 기반 선택 |
+| **PPO + Priority-aware GRU** | 상태 표현과 순차 이동 정책을 학습 |
+| **Simulated Annealing** | 이동 행동 시퀀스를 변형하며 해 탐색 |
+| **Ant Colony Optimization** | 휴리스틱 초기해와 페로몬을 결합한 탐색 |
+| **Gurobi MIP** | 이동 순서와 적치 간섭을 수리모형으로 최적화 |
+
+**평가 항목:** 최종 blocking pair 수 · 이동 수 · 실행시간 · 종료 상태
+
+방법별 적용 범위와 시간 측정 기준은 [Technical Notes](docs/METHODOLOGY.md)에 정리했습니다.
+
+## Quick Start
+
+**CPU 환경에서 데이터 생성 → PPO 학습 → 정책·baseline 비교 → 시각화까지 실행할 수 있습니다**
+
+Python 3.10 이상, 저장소 루트 기준입니다.
 
 ```bash
 python -m venv .venv
 # macOS / Linux
 source .venv/bin/activate
 # Windows PowerShell: .venv\Scripts\Activate.ps1
+
 python -m pip install -r requirements.txt
 
-# 1. 공개용 합성 시나리오 생성
+# Generate a synthetic stockyard scenario
 python -m stockyard.data.sample --seed 42
 
-# 2. PPO 짧은 실행 검증 — 성능 학습에는 더 많은 update가 필요
+# Run a short PPO training demo
 python -m stockyard.training.ppo --updates 2 --horizon 32
 
-# 3. 동일 시나리오에서 정책 및 baseline 평가
+# Benchmark policies and optimization methods
 python -m stockyard.evaluation.benchmark --methods random edd-mod sop-mfb sa aco ppo
 
-# 4. 결과 시각화
+# Visualize the benchmark
 python -m stockyard.analysis.plot
 ```
 
-생성 결과는 `outputs/training.csv`, `outputs/policy.pt`, `outputs/benchmark.csv`, `outputs/benchmark.svg`에 저장됩니다. 체크포인트는 실행자가 직접 생성하며 저장소에 포함하지 않습니다.
+기본 예제는 강재 24장, 출발지 4개, 도착지 4개입니다. 학습 체크포인트와 평가표·그래프는 `outputs/`에 생성됩니다.
 
-### Gurobi 선택 실행
+<details>
+<summary><strong>동적 입고 시나리오 실행</strong></summary>
+
+```bash
+python -m stockyard.data.sample --dynamic --output outputs/dynamic.csv
+python -m stockyard.evaluation.benchmark --data outputs/dynamic.csv --methods random edd-mod ppo
+```
+
+공개 benchmark의 SA·ACO·Gurobi는 정적 시나리오를 비교 대상으로 사용합니다.
+
+</details>
+
+<details>
+<summary><strong>Gurobi MIP 실행</strong></summary>
 
 ```bash
 python -m pip install -r requirements-gurobi.txt
@@ -66,55 +137,54 @@ python -m stockyard.data.sample --sources 2 --destinations 2 --plates-per-source
 python -m stockyard.evaluation.benchmark --data outputs/tiny.csv --methods gurobi --budget-seconds 2
 ```
 
-Gurobi 실행에는 유효한 라이선스가 필요합니다. 라이선스 파일은 커밋하지 않습니다. 큰 문제는 제한 라이선스의 모델 크기를 초과할 수 있습니다. Gurobi는 정적 시나리오의 순차 이동 MIP이며, 시간 제한으로 종료된 경우 feasible solution과 optimal solution을 구분합니다.
+Gurobi에는 유효한 라이선스가 필요합니다. 모델 크기에 맞는 라이선스를 사용하고, 결과의 종료 상태와 optimality gap을 함께 확인합니다.
 
-### 동적 입고 예제
+</details>
 
-```bash
-python -m stockyard.data.sample --dynamic --output outputs/dynamic.csv
-python -m stockyard.evaluation.benchmark --data outputs/dynamic.csv --methods random edd-mod ppo
-```
+## Repository Guide
 
-공개 benchmark의 SA·ACO·Gurobi 비교는 정적 입고에 한정됩니다. 동적 입력을 주면 이 세 방법은 명시적으로 건너뜁니다.
+| 경로 | 살펴볼 내용 |
+| :--- | :--- |
+| [Environment](stockyard/environment/yard.py) | 상태 표현, 이동 제약, action mask, 보상 설계 |
+| [Models](stockyard/models/network.py) | Priority-aware GRU, encoder 변형, actor–critic |
+| [PPO Demo](stockyard/training/ppo.py) | 간결한 학습·체크포인트 생성 흐름 |
+| [Research Training](stockyard/training/research_train.py) | 연구용 병렬 rollout 및 학습 흐름 |
+| [Baselines](stockyard/baselines/) | Heuristic, SA, ACO, Gurobi 구현 |
+| [Evaluation](stockyard/evaluation/) | 정책 rollout 및 공통 benchmark |
+| [Data](stockyard/data/) | 강재 모델, 합성 시나리오 생성·로딩 |
+| [Analysis](stockyard/analysis/) | 평가 결과 시각화 |
+| [Tests](tests/) | 간섭 지표, 이동 제약, 동적 입고, GAE 검증 |
 
-## 코드 구조
+## Engineering & Validation
 
-| 경로 | 역할 |
-|---|---|
-| `stockyard/data/` | Plate 모델, 연구용 합성 생성기, 공개 sample 생성·로딩 |
-| `stockyard/environment/yard.py` | 적치장 상태, top-only 이동, 마스크, 동적 입고, 보상·종료 |
-| `stockyard/models/network.py` | priority GRU, actor/critic, encoder 변형 |
-| `stockyard/training/ppo.py` | 작은 CPU용 공개 PPO 데모 |
-| `stockyard/training/research_train.py` | 원본의 대규모 병렬 rollout·연구 학습 흐름 |
-| `stockyard/evaluation/` | 정책 rollout, 학습 평가 adapter, 공통 benchmark |
-| `stockyard/baselines/` | heuristic, Gurobi, SA, ACO |
-| `stockyard/baselines/legacy/` | 이전 SA move/annealer 구현; 기본 benchmark에서 미사용 |
-| `stockyard/analysis/` | benchmark 결과 시각화 |
-| `data/sample/` | 독립적으로 생성한 공개 CSV |
-| `docs/` | 문제 정의, 구현 이력, 검증 결과, 시각 자료 |
-| `tests/` | 제약·간섭·동적 입고·네트워크·GAE 검증 |
+학습 알고리즘뿐 아니라 **환경의 동작과 평가 흐름을 확인할 수 있는 구조**로 정리했습니다.
 
-연구 학습 흐름은 `python -m stockyard.training.research_train --help`로 설정을 확인할 수 있습니다. 이 경로는 실험 규모가 크며 전체 학습을 재수행하여 검증하지 않았습니다. 검증된 시작점은 위의 공개 데모입니다.
-
-## 지표와 실험 해석
-
-pile의 배열은 아래에서 위 순서입니다. 아래 강재의 반출일이 위 강재보다 빠른 조합을 **blocking pair**로 셉니다. 같은 반출일은 간섭으로 세지 않습니다. 이 수치는 잠재적인 반출 순서 간섭이며 실제 추가 크레인 이동 횟수와 일대일로 같지 않습니다.
-
-보상은 간섭 변화, 새로 생성된 간섭 수, 반출일 차이의 심각도, 종료 시 간섭 비율을 반영합니다. 모든 식과 방법별 범위는 [방법론](docs/METHODOLOGY.md)에 설명합니다.
-
-이 저장소는 **공개용 합성 데이터의 실행 가능성을 보여주는 연구 코드 포트폴리오**입니다. 실제 조선소 데이터, 원본 실적 분포 통계, 원본 학습 체크포인트, 논문 실험 결과는 포함하지 않습니다. 짧은 PPO 실행은 학습 성공이나 heuristic 대비 성능 우위를 입증하지 않습니다. 합성 데모 수치를 학위논문의 성능 수치로 사용하지 않습니다.
-
-## 검증
+- **동작 검증:** top-only 이동, 적재 용량, padding mask, 동적 입고, 종료 처리
+- **학습 검증:** GAE의 종료 처리, 네트워크 출력, 학습·평가 연결
+- **실행 검증:** 합성 데이터 생성, PPO 짧은 학습, baseline 비교, Gurobi 소규모 풀이, 그래프 생성
+- **자동화:** GitHub Actions에 테스트와 데모 실행 workflow 구성
 
 ```bash
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-GitHub Actions는 테스트와 합성 데이터 생성 → PPO 짧은 학습 → baseline/정책 평가 → 시각화 흐름을 실행하도록 구성되어 있습니다. 로컬 확인 결과와 제한사항은 [검증 기록](docs/VALIDATION.md)을 참고하세요.
+[Validation Record](docs/VALIDATION.md) · [Implementation Provenance](docs/PROVENANCE.md)
 
-## 공개 데이터 원칙
+---
 
-공개 CSV는 `SYN_` 식별자와 상대적인 day 값을 사용하며 실제 업체·선박·작업번호·담당자 정보를 담지 않습니다. 기본 생성기의 기간·중량 설정은 일반적인 예제 값입니다. 비공개 데이터, 환경 변수 파일, 라이선스, 학습 모델, 로컬 실행 결과는 `.gitignore`로 제외합니다.
+## Research & Public Release
 
-실제 운영 적용에는 추가 현장 제약, 시간 단위, 장비·이동 모델, 반출 처리, 안전 규칙 및 분포 변화 검증이 필요합니다. 코드 공개 자체가 상용 시스템 적용 완료를 의미하지 않습니다.
+이 저장소는 석사 연구 코드를 기반으로 한 **공개용 연구 포트폴리오**입니다. 산업 데이터의 기밀성을 보호하기 위해 독립적으로 생성한 합성 시나리오를 제공하며, 실제 조선소 데이터와 연구 체크포인트는 포함하지 않습니다.
+
+빠른 실행 예제는 학습·평가 파이프라인을 확인하는 데 목적이 있습니다. 논문 실험 결과와 공개 데모의 성능은 구분하며, 모델과 방법별 세부 가정은 아래 문서에서 확인할 수 있습니다.
+
+[Problem Formulation & Methodology](docs/METHODOLOGY.md) · [Source & Adaptation Notes](docs/PROVENANCE.md)
+
+<div align="center">
+
+**Industrial Operations × Reinforcement Learning × Optimization**
+
+*현장의 제약을 이해하고, 더 나은 운영 의사결정으로 연결하다*
+
+</div>
