@@ -19,15 +19,9 @@
 
 ## Overview
 
-**어디에 쌓느냐가, 다음 작업의 효율을 결정합니다**
-
 조선소 강재 적치장에서는 먼저 반출해야 할 강재 위에 나중에 사용할 강재가 쌓이면 추가 이동이 발생합니다. 적재 공간과 이동 제약을 지키면서 반출 순서까지 고려해야 하므로, 개별 강재의 적치 선택은 이후 작업과 연결되는 의사결정입니다.
 
 이 프로젝트는 석사과정에서 수행한 **조선소 강재 적치·반출 간섭 최소화 연구**를 바탕으로, 적치장 운영을 강화학습 환경으로 모델링하고 **반출 우선순위를 반영하는 GRU와 PPO**를 결합해 재배치 정책을 학습합니다.
-
-> **문제 정의 → 환경 모델링 → 정책 학습 → 최적화 알고리즘 비교**
->
-> 산업 운영 문제를 AI와 수리최적화로 연결하는 연구 구현입니다
 
 ![Illustrative example of retrieval interference](docs/stockyard.svg)
 
@@ -78,7 +72,7 @@
 
 ## Quick Start
 
-**CPU 환경에서 데이터 생성 → PPO 학습 → 정책·baseline 비교 → 시각화까지 실행할 수 있습니다**
+CPU에서 합성 데이터 생성, PPO 학습, baseline 평가와 결과 시각화를 실행할 수 있습니다.
 
 Python 3.10 이상, 저장소 루트 기준입니다.
 
@@ -146,7 +140,7 @@ Gurobi에는 유효한 라이선스가 필요합니다. 모델 크기에 맞는 
 
 ## Engineering & Validation
 
-학습 알고리즘뿐 아니라 **환경의 동작과 평가 흐름을 확인할 수 있는 구조**로 정리했습니다.
+환경 제약과 학습·평가 코드에 대한 테스트를 제공합니다.
 
 - **동작 검증:** top-only 이동, 적재 용량, padding mask, 동적 입고, 종료 처리
 - **학습 검증:** GAE의 종료 처리, 네트워크 출력, 학습·평가 연결
@@ -170,10 +164,3 @@ python -m pytest -q
 
 [Problem Formulation & Methodology](docs/METHODOLOGY.md) · [Source & Adaptation Notes](docs/PROVENANCE.md)
 
-<div align="center">
-
-**Industrial Operations × Reinforcement Learning × Optimization**
-
-*현장의 제약을 이해하고, 더 나은 운영 의사결정으로 연결하다*
-
-</div>
