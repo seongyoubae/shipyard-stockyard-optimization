@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
 <title id="title">Retrieval interference: blocked plate versus directly accessible plate</title>
-<desc id="desc">Illustrative steel plate stacks with top-only crane access. Left, the earliest-due plate, outbound day 10, is below plates with outbound days 30 and 20. These plates block retrieval. Right, plates are ordered bottom-to-top by days 30, 20, 10, so day 10 is directly accessible. This compares stacking examples, not measured algorithm results.</desc>
+<desc id="desc">Illustrative steel plate stacks handled by lifting magnets with top-only access. Left, the earliest-due plate, outbound day 10, is below plates with outbound days 30 and 20. These plates block retrieval. Right, plates are ordered bottom-to-top by days 30, 20, 10, so day 10 is directly accessible. This compares stacking examples, not measured algorithm results.</desc>
 <defs>
 <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#b8483f"/></marker>
 </defs>
 <rect x="1" y="1" width="1198" height="498" rx="16" fill="#fafaf7" stroke="#deded7"/>
 <g font-family="Inter, Segoe UI, Arial, sans-serif">
-<text x="46" y="47" font-size="12" letter-spacing="2" fill="#6b706c" font-weight="600">THE STOCKYARD PROBLEM</text>
-<text x="46" y="85" font-size="29" fill="#202b2b" font-weight="600">The right plate. In the wrong place.</text>
-<text x="46" y="114" font-size="15" fill="#6b706c">Steel plates are lifted from the top. Stacking order determines retrieval access.</text>
+<text x="46" y="47" font-size="12" letter-spacing="2" fill="#6b706c" font-weight="600">STEEL PLATE STOCKYARD</text>
+<text x="46" y="85" font-size="29" fill="#202b2b" font-weight="600">Retrieval interference</text>
+<text x="46" y="114" font-size="15" fill="#6b706c">An earlier-due plate can be blocked by the plates above it.</text>
 <line x1="600" y1="152" x2="600" y2="407" stroke="#dcded8"/>
 
 <text x="48" y="167" fill="#b8483f" font-size="12" font-weight="600" text-anchor="start">01</text>
@@ -27,11 +27,14 @@
 <path d="M89 306l38 -18h274l-38 18z" fill="#ded3d1" stroke="#ffffff" stroke-width=".6"/><path d="M363 306l38 -18v12l-38 18z" fill="#88736f"/><path d="M89 306h274v12H89z" fill="#ab9390"/>
 <path d="M408 300h16" stroke="#ab9390"/>
 <text x="432" y="305" fill="#717c7e" font-size="14" font-weight="400" text-anchor="start">Day 20</text>
-<path d="M233 197v42" fill="none" stroke="#526064" stroke-width="2"/><rect x="219" y="232" width="28" height="19" rx="4" fill="#526064"/><path d="M233 251v13c0 19 25 19 25 0" fill="none" stroke="#526064" stroke-width="4" stroke-linecap="round"/>
-<path d="M260 282V301" stroke="#b8483f" stroke-width="2" marker-end="url(#arrow)"/><path d="M441 286h-12v45h12" fill="none" stroke="#b8483f" stroke-width="1.6"/>
+<path d="M210 184L233 246M280 184L257 246" fill="none" stroke="#68757b" stroke-width="1.5"/>
+<rect x="168" y="246" width="154" height="10" rx="1" fill="#4c5b63"/>
+<path d="M192 256V284" stroke="#68757b" stroke-width="1.6"/><rect x="174" y="288" width="36" height="7" fill="#50676f"/><ellipse cx="192" cy="288" rx="18" ry="5" fill="#91a2a6"/><ellipse cx="192" cy="295" rx="18" ry="4" fill="#50676f"/>
+<path d="M298 256V284" stroke="#68757b" stroke-width="1.6"/><rect x="280" y="288" width="36" height="7" fill="#50676f"/><ellipse cx="298" cy="288" rx="18" ry="5" fill="#91a2a6"/><ellipse cx="298" cy="295" rx="18" ry="4" fill="#50676f"/>
+<path d="M441 286h-12v45h12" fill="none" stroke="#b8483f" stroke-width="1.6"/>
 <text x="461" y="284" fill="#b8483f" font-size="12" font-weight="500" text-anchor="start">Blocks access</text>
 <path d="M78 340h-16v39h55" fill="none" stroke="#b98837" stroke-width="1.4"/>
-<text x="126" y="384" fill="#996e2c" font-size="13" font-weight="600" text-anchor="start">Retrieve Day 10 first</text>
+<text x="126" y="384" fill="#996e2c" font-size="13" font-weight="600" text-anchor="start">Target plate: Day 10</text>
 <rect x="716" y="346" width="27" height="16" rx="2" fill="#526064"/>
 <rect x="921" y="346" width="27" height="16" rx="2" fill="#526064"/>
 <path d="M675 363H1019" stroke="#ccd1cb" stroke-width="2"/>
@@ -44,9 +47,12 @@
 <path d="M691 274l38 -18h274l-38 18z" fill="#dcb773" stroke="#ffffff" stroke-width=".6"/><path d="M965 274l38 -18v12l-38 18z" fill="#976f2e"/><path d="M691 274h274v12H691z" fill="#b98837"/>
 <path d="M1010 268h16" stroke="#b98837"/>
 <text x="1034" y="273" fill="#996e2c" font-size="14" font-weight="600" text-anchor="start">Day 10</text>
-<path d="M835 163v42" fill="none" stroke="#27766c" stroke-width="2"/><rect x="821" y="198" width="28" height="19" rx="4" fill="#27766c"/><path d="M835 217v13c0 19 25 19 25 0" fill="none" stroke="#27766c" stroke-width="4" stroke-linecap="round"/>
-<path d="M835 243V256" stroke="#27766c" stroke-width="1.8"/><path d="M811 290V307M819 290V307M827 290V307" stroke="#b98837" stroke-width="1" stroke-dasharray="3 3" opacity=".6"/>
-<text x="847" y="299" fill="#27766c" font-size="12" font-weight="500" text-anchor="start">Lift first</text>
+<path d="M812 184L835 214M882 184L859 214" fill="none" stroke="#68757b" stroke-width="1.5"/>
+<rect x="770" y="214" width="154" height="10" rx="1" fill="#4c5b63"/>
+<path d="M794 224V252" stroke="#68757b" stroke-width="1.6"/><rect x="776" y="256" width="36" height="7" fill="#50676f"/><ellipse cx="794" cy="256" rx="18" ry="5" fill="#91a2a6"/><ellipse cx="794" cy="263" rx="18" ry="4" fill="#50676f"/>
+<path d="M900 224V252" stroke="#68757b" stroke-width="1.6"/><rect x="882" y="256" width="36" height="7" fill="#50676f"/><ellipse cx="900" cy="256" rx="18" ry="5" fill="#91a2a6"/><ellipse cx="900" cy="263" rx="18" ry="4" fill="#50676f"/>
+<path d="M811 290V307M819 290V307M827 290V307" stroke="#b98837" stroke-width="1" stroke-dasharray="3 3" opacity=".6"/>
+<text x="847" y="301" fill="#27766c" font-size="12" font-weight="500" text-anchor="start">Day 10 retrieved first</text>
 <text x="126" y="416" fill="#65716e" font-size="14" font-weight="400" text-anchor="start">Later-due plates must be moved out of the way.</text>
 <text x="729" y="416" fill="#65716e" font-size="14" font-weight="400" text-anchor="start">The earliest-due plate is accessible from the top.</text>
 <line x1="46" y1="442" x2="1154" y2="442" stroke="#dcded8"/><rect x="46" y="462" width="14" height="8" rx="1" fill="#b98837"/>
