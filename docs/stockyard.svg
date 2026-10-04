@@ -1,77 +1,46 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" role="img" aria-labelledby="title desc">
-<title id="title">Steel plate relocation with priority-aware GRU and PPO</title>
-<desc id="desc">Conceptual illustration. A pile with bottom-to-top outbound days 10, 30, 20 has two blocking pairs. A reordered pile with days 30, 20, 10 has none. The policy selects source and destination subject to top-only and capacity constraints; this is not an experimental performance result.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="480" viewBox="0 0 1100 480" role="img" aria-labelledby="title desc">
+<title id="title">Example of steel plate retrieval interference</title>
+<desc id="desc">Two illustrative stacking orders, not algorithm outputs. Left pile, bottom-to-top: outbound days 10, 30, 20. Day 10 is buried below two later-due plates, yielding two blocking pairs. Right pile, bottom-to-top: days 30, 20, 10. Earlier-due plates are accessible, yielding zero blocking pairs.</desc>
 <defs>
-<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101f36"/><stop offset="1" stop-color="#07111f"/></linearGradient>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#112039"/><stop offset="1" stop-color="#091321"/></linearGradient>
 <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#93a8bd"/><stop offset="1" stop-color="#526b85"/></linearGradient>
 <linearGradient id="priority" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#75efdc"/><stop offset="1" stop-color="#32baa9"/></linearGradient>
-<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#92a8c0" stroke-opacity=".045"/></pattern>
-<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10" fill="none" stroke="#69dbc9" stroke-width="1.5"/></marker>
 </defs>
-<rect width="1200" height="600" rx="20" fill="url(#bg)"/>
-<rect width="1200" height="600" rx="20" fill="url(#grid)"/>
+<rect width="1100" height="480" rx="18" fill="url(#bg)"/>
 <g font-family="Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif">
-<rect x="48" y="42" width="5" height="20" rx="2" fill="#65e4d0"/>
-<text x="66" y="58" fill="#77a1bc" font-size="13" font-weight="600" letter-spacing="2.3">INDUSTRIAL OPERATIONS / REINFORCEMENT LEARNING</text>
-<text x="48" y="112" fill="#f0f5fa" font-size="39" font-weight="700" letter-spacing="-.7">Steel plate relocation, with retrieval in mind.</text>
-<text x="49" y="145" fill="#9dafc4" font-size="17">Priority-aware GRU + PPO for stockyard decision-making</text>
-<line x1="48" y1="174" x2="1152" y2="174" stroke="#25354a"/>
+<rect x="40" y="36" width="4" height="21" rx="2" fill="#65e4d0"/>
+<text x="57" y="53" fill="#ecf3fa" font-size="25" font-weight="600">What causes retrieval interference?</text>
+<text x="40" y="84" fill="#9dafc4" font-size="15">An earlier-due plate is blocked when later-due plates are stacked above it.</text>
+<line x1="40" y1="106" x2="1060" y2="106" stroke="#28394e"/>
+<line x1="550" y1="133" x2="550" y2="402" stroke="#28394e"/>
 
-<text x="65" y="221" fill="#63d7c4" font-size="13" font-weight="600" text-anchor="start">01</text>
-<text x="94" y="221" fill="#dce8f4" font-size="13" font-weight="600" text-anchor="start">ORDER INTERFERENCE</text>
-<ellipse cx="207" cy="412" rx="149" ry="17" fill="#000000" opacity=".25"/>
-<path d="M72 372l42 -23h216l-42 23z" fill="#8bf0df" stroke="#ffffff" stroke-opacity=".12"/>
-<path d="M288 372l42 -23v32l-42 23z" fill="#218e86"/>
-<rect x="72" y="372" width="216" height="32" rx="1" fill="url(#priority)"/>
-<path d="M81 378h194" stroke="#ffffff" stroke-opacity=".16"/>
-<text x="87" y="394" fill="#083c3b" font-size="10" font-weight="600" text-anchor="start">OUTBOUND</text>
-<text x="272" y="395" fill="#083c3b" font-size="18" font-weight="700" text-anchor="end">D10</text>
-<path d="M72 321l42 -23h216l-42 23z" fill="#a8bccb" stroke="#ffffff" stroke-opacity=".12"/>
-<path d="M288 321l42 -23v32l-42 23z" fill="#40586f"/>
-<rect x="72" y="321" width="216" height="32" rx="1" fill="url(#steel)"/>
-<path d="M81 327h194" stroke="#ffffff" stroke-opacity=".16"/>
-<text x="87" y="343" fill="#f5f9fc" font-size="10" font-weight="600" text-anchor="start">OUTBOUND</text>
-<text x="272" y="344" fill="#f5f9fc" font-size="18" font-weight="700" text-anchor="end">D30</text>
-<path d="M72 270l42 -23h216l-42 23z" fill="#a8bccb" stroke="#ffffff" stroke-opacity=".12"/>
-<path d="M288 270l42 -23v32l-42 23z" fill="#40586f"/>
-<rect x="72" y="270" width="216" height="32" rx="1" fill="url(#steel)"/>
-<path d="M81 276h194" stroke="#ffffff" stroke-opacity=".16"/>
-<text x="87" y="292" fill="#f5f9fc" font-size="10" font-weight="600" text-anchor="start">OUTBOUND</text>
-<text x="272" y="293" fill="#f5f9fc" font-size="18" font-weight="700" text-anchor="end">D20</text>
-<text x="200" y="449" fill="#93a9be" font-size="11" font-weight="600" text-anchor="middle">EARLIER-DUE PLATE BURIED</text>
-<text x="200" y="493" fill="#c1d0df" font-size="17" font-weight="600" text-anchor="middle">2 blocking pairs</text>
-<text x="803" y="221" fill="#63d7c4" font-size="13" font-weight="600" text-anchor="start">02</text>
-<text x="832" y="221" fill="#dce8f4" font-size="13" font-weight="600" text-anchor="start">RETRIEVAL-AWARE ORDER</text>
-<ellipse cx="945" cy="412" rx="149" ry="17" fill="#000000" opacity=".25"/>
-<path d="M810 372l42 -23h216l-42 23z" fill="#a8bccb" stroke="#ffffff" stroke-opacity=".12"/>
-<path d="M1026 372l42 -23v32l-42 23z" fill="#40586f"/>
-<rect x="810" y="372" width="216" height="32" rx="1" fill="url(#steel)"/>
-<path d="M819 378h194" stroke="#ffffff" stroke-opacity=".16"/>
-<text x="825" y="394" fill="#f5f9fc" font-size="10" font-weight="600" text-anchor="start">OUTBOUND</text>
-<text x="1010" y="395" fill="#f5f9fc" font-size="18" font-weight="700" text-anchor="end">D30</text>
-<path d="M810 321l42 -23h216l-42 23z" fill="#a8bccb" stroke="#ffffff" stroke-opacity=".12"/>
-<path d="M1026 321l42 -23v32l-42 23z" fill="#40586f"/>
-<rect x="810" y="321" width="216" height="32" rx="1" fill="url(#steel)"/>
-<path d="M819 327h194" stroke="#ffffff" stroke-opacity=".16"/>
-<text x="825" y="343" fill="#f5f9fc" font-size="10" font-weight="600" text-anchor="start">OUTBOUND</text>
-<text x="1010" y="344" fill="#f5f9fc" font-size="18" font-weight="700" text-anchor="end">D20</text>
-<path d="M810 270l42 -23h216l-42 23z" fill="#8bf0df" stroke="#ffffff" stroke-opacity=".12"/>
-<path d="M1026 270l42 -23v32l-42 23z" fill="#218e86"/>
-<rect x="810" y="270" width="216" height="32" rx="1" fill="url(#priority)"/>
-<path d="M819 276h194" stroke="#ffffff" stroke-opacity=".16"/>
-<text x="825" y="292" fill="#083c3b" font-size="10" font-weight="600" text-anchor="start">OUTBOUND</text>
-<text x="1010" y="293" fill="#083c3b" font-size="18" font-weight="700" text-anchor="end">D10</text>
-<text x="938" y="449" fill="#93a9be" font-size="11" font-weight="600" text-anchor="middle">EARLIER-DUE PLATE ACCESSIBLE</text>
-<text x="938" y="493" fill="#65e4d0" font-size="17" font-weight="600" text-anchor="middle">0 blocking pairs</text>
-<rect x="458" y="248" width="284" height="182" rx="16" fill="#12243a" stroke="#35566b"/>
-<text x="600" y="278" fill="#8db0c6" font-size="11" font-weight="600" text-anchor="middle">LEARNED RELOCATION POLICY</text>
-<rect x="482" y="299" width="126" height="42" rx="8" fill="#1e394c"/><rect x="620" y="299" width="98" height="42" rx="8" fill="#1b3b3d"/>
-<text x="545" y="325" fill="#dceaf3" font-size="15" font-weight="600" text-anchor="middle">Priority GRU</text>
-<text x="669" y="325" fill="#70e5d0" font-size="16" font-weight="700" text-anchor="middle">PPO</text>
-<text x="600" y="368" fill="#edf3f9" font-size="16" font-weight="500" text-anchor="middle">Select source + destination</text>
-<text x="600" y="401" fill="#93adbf" font-size="12" font-weight="400" text-anchor="middle">Top-only moves · Capacity masks</text>
-<path d="M355 326H436" fill="none" stroke="#69dbc9" stroke-width="2" marker-end="url(#arrow)"/><path d="M763 326H786" fill="none" stroke="#69dbc9" stroke-width="2" marker-end="url(#arrow)"/>
-<line x1="48" y1="531" x2="1152" y2="531" stroke="#25354a"/><circle cx="57" cy="562" r="5" fill="#65e4d0"/>
-<text x="72" y="567" fill="#aabdcf" font-size="13" font-weight="400" text-anchor="start">D10 = earlier retrieval priority</text>
-<text x="1152" y="567" fill="#69869d" font-size="10" font-weight="500" text-anchor="end">CONCEPTUAL EXAMPLE · NOT EXPERIMENTAL RESULTS</text>
+<text x="269" y="155" fill="#dce8f4" font-size="14" font-weight="600" text-anchor="middle">INTERFERENCE</text>
+<ellipse cx="269" cy="340" rx="166" ry="17" fill="#000000" opacity=".22"/>
+<path d="M118 299l48 -25h254l-48 25z" fill="#8bf0df" stroke="#ffffff" stroke-opacity=".12"/><path d="M372 299l48 -25v33l-48 25z" fill="#218e86"/><rect x="118" y="299" width="254" height="33" rx="1" fill="url(#priority)"/>
+<text x="133" y="321" fill="#083c3b" font-size="10" font-weight="600" text-anchor="start">OUTBOUND DAY</text>
+<text x="356" y="323" fill="#083c3b" font-size="20" font-weight="700" text-anchor="end">10</text>
+<path d="M118 248l48 -25h254l-48 25z" fill="#a8bccb" stroke="#ffffff" stroke-opacity=".12"/><path d="M372 248l48 -25v33l-48 25z" fill="#40586f"/><rect x="118" y="248" width="254" height="33" rx="1" fill="url(#steel)"/>
+<text x="133" y="270" fill="#f5f9fc" font-size="10" font-weight="600" text-anchor="start">OUTBOUND DAY</text>
+<text x="356" y="272" fill="#f5f9fc" font-size="20" font-weight="700" text-anchor="end">30</text>
+<path d="M118 197l48 -25h254l-48 25z" fill="#a8bccb" stroke="#ffffff" stroke-opacity=".12"/><path d="M372 197l48 -25v33l-48 25z" fill="#40586f"/><rect x="118" y="197" width="254" height="33" rx="1" fill="url(#steel)"/>
+<text x="133" y="219" fill="#f5f9fc" font-size="10" font-weight="600" text-anchor="start">OUTBOUND DAY</text>
+<text x="356" y="221" fill="#f5f9fc" font-size="20" font-weight="700" text-anchor="end">20</text>
+<text x="269" y="374" fill="#9db3c7" font-size="13" font-weight="400" text-anchor="middle">Day 10 is buried below later-due plates</text>
+<text x="269" y="403" fill="#d0ddea" font-size="17" font-weight="600" text-anchor="middle">2 blocking pairs</text>
+<text x="819" y="155" fill="#dce8f4" font-size="14" font-weight="600" text-anchor="middle">NO INTERFERENCE</text>
+<ellipse cx="819" cy="340" rx="166" ry="17" fill="#000000" opacity=".22"/>
+<path d="M668 299l48 -25h254l-48 25z" fill="#a8bccb" stroke="#ffffff" stroke-opacity=".12"/><path d="M922 299l48 -25v33l-48 25z" fill="#40586f"/><rect x="668" y="299" width="254" height="33" rx="1" fill="url(#steel)"/>
+<text x="683" y="321" fill="#f5f9fc" font-size="10" font-weight="600" text-anchor="start">OUTBOUND DAY</text>
+<text x="906" y="323" fill="#f5f9fc" font-size="20" font-weight="700" text-anchor="end">30</text>
+<path d="M668 248l48 -25h254l-48 25z" fill="#a8bccb" stroke="#ffffff" stroke-opacity=".12"/><path d="M922 248l48 -25v33l-48 25z" fill="#40586f"/><rect x="668" y="248" width="254" height="33" rx="1" fill="url(#steel)"/>
+<text x="683" y="270" fill="#f5f9fc" font-size="10" font-weight="600" text-anchor="start">OUTBOUND DAY</text>
+<text x="906" y="272" fill="#f5f9fc" font-size="20" font-weight="700" text-anchor="end">20</text>
+<path d="M668 197l48 -25h254l-48 25z" fill="#8bf0df" stroke="#ffffff" stroke-opacity=".12"/><path d="M922 197l48 -25v33l-48 25z" fill="#218e86"/><rect x="668" y="197" width="254" height="33" rx="1" fill="url(#priority)"/>
+<text x="683" y="219" fill="#083c3b" font-size="10" font-weight="600" text-anchor="start">OUTBOUND DAY</text>
+<text x="906" y="221" fill="#083c3b" font-size="20" font-weight="700" text-anchor="end">10</text>
+<text x="819" y="374" fill="#9db3c7" font-size="13" font-weight="400" text-anchor="middle">Earlier-due plates are accessible</text>
+<text x="819" y="403" fill="#65e4d0" font-size="17" font-weight="600" text-anchor="middle">0 blocking pairs</text>
+<line x1="40" y1="429" x2="1060" y2="429" stroke="#28394e"/><circle cx="47" cy="455" r="5" fill="#65e4d0"/>
+<text x="63" y="460" fill="#aabdcf" font-size="12" font-weight="400" text-anchor="start">Highlighted plate: earliest outbound day</text>
+<text x="1060" y="460" fill="#728ba5" font-size="11" font-weight="500" text-anchor="end">ILLUSTRATIVE STACKING ORDERS</text>
 </g></svg>
