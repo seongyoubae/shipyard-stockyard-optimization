@@ -1,17 +1,17 @@
-import pandas as pd
 import gurobipy as gp
 from gurobipy import GRB
-import os
 import time
-from stockyard.config import get_cfg
 import random
+
+
 def solve_scenario_sequential_gurobi(
     scenario_df,
     scenario_name,
     file_name,
     max_stack,
     time_limit,
-    mip_gap=0.05
+    mip_gap=0.05,
+    seed=42,
 ):
     """
     Sequential Gurobi Baseline
@@ -22,21 +22,23 @@ def solve_scenario_sequential_gurobi(
     - 최종 blocking pair 최소화
     """
 
-    scenario_df = scenario_df.sort_values(
-        by=["pileno", "pileseq"]
-    ).reset_index(drop=True)
+    scenario_df = scenario_df.sort_values(by=["pileno", "pileseq"]).reset_index(
+        drop=True
+    )
 
     plates = []
     source_piles = {}
 
     for idx, row in scenario_df.iterrows():
-        plates.append({
-            "idx": idx,
-            "id": row["markno"],
-            "outbound": int(row["outbound"]),
-            "pileno": row["pileno"],
-            "pileseq": int(row["pileseq"]),
-        })
+        plates.append(
+            {
+                "idx": idx,
+                "id": row["markno"],
+                "outbound": int(row["outbound"]),
+                "pileno": row["pileno"],
+                "pileseq": int(row["pileseq"]),
+            }
+        )
 
         if row["pileno"] not in source_piles:
             source_piles[row["pileno"]] = []
@@ -81,6 +83,7 @@ def solve_scenario_sequential_gurobi(
 
     model.setParam("OutputFlag", 1)
     model.setParam("TimeLimit", time_limit)
+    model.setParam("Seed", seed)
     model.setParam("MIPGap", mip_gap)
     model.setParam("Threads", 0)
     model.setParam("MIPFocus", 1)
@@ -88,9 +91,12 @@ def solve_scenario_sequential_gurobi(
     model.setParam("NoRelHeurTime", min(300, max(0, time_limit * 0.25)))
     print(
         "[CHECK] Params:",
-        "MIPFocus =", model.Params.MIPFocus,
-        "Heuristics =", model.Params.Heuristics,
-        "NoRelHeurTime =", model.Params.NoRelHeurTime,
+        "MIPFocus =",
+        model.Params.MIPFocus,
+        "Heuristics =",
+        model.Params.Heuristics,
+        "NoRelHeurTime =",
+        model.Params.NoRelHeurTime,
     )
     # ------------------------------------------------------------
     # Variables
@@ -121,42 +127,36 @@ def solve_scenario_sequential_gurobi(
         vtype=GRB.CONTINUOUS,
         lb=0.0,
         ub=1.0,
-        name="same_dest_s"
+        name="same_dest_s",
     )
 
     # ------------------------------------------------------------
     # 1. 각 강재는 정확히 한 step에서 이동
     # ------------------------------------------------------------
     model.addConstrs(
-        (gp.quicksum(z[i, t] for t in T) == 1 for i in I),
-        name="EachPlateMovedOnce"
+        (gp.quicksum(z[i, t] for t in T) == 1 for i in I), name="EachPlateMovedOnce"
     )
 
     # ------------------------------------------------------------
     # 2. 각 step에서는 정확히 하나의 강재만 이동
     # ------------------------------------------------------------
     model.addConstrs(
-        (gp.quicksum(z[i, t] for i in I) == 1 for t in T),
-        name="OnePlatePerStep"
+        (gp.quicksum(z[i, t] for i in I) == 1 for t in T), name="OnePlatePerStep"
     )
 
     # ------------------------------------------------------------
     # 3. move_time 정의
     # ------------------------------------------------------------
     model.addConstrs(
-        (
-            move_time[i] == gp.quicksum(t * z[i, t] for t in T)
-            for i in I
-        ),
-        name="MoveTimeDef"
+        (move_time[i] == gp.quicksum(t * z[i, t] for t in T) for i in I),
+        name="MoveTimeDef",
     )
 
     # ------------------------------------------------------------
     # 4. 각 강재는 하나의 destination pile에 배정
     # ------------------------------------------------------------
     model.addConstrs(
-        (gp.quicksum(x[i, s] for s in S) == 1 for i in I),
-        name="AssignDestination"
+        (gp.quicksum(x[i, s] for s in S) == 1 for i in I), name="AssignDestination"
     )
 
     # ------------------------------------------------------------
@@ -164,7 +164,7 @@ def solve_scenario_sequential_gurobi(
     # ------------------------------------------------------------
     model.addConstrs(
         (gp.quicksum(x[i, s] for i in I) <= max_stack for s in S),
-        name="DestinationCapacity"
+        name="DestinationCapacity",
     )
 
     # ------------------------------------------------------------
@@ -176,7 +176,7 @@ def solve_scenario_sequential_gurobi(
             move_time[upper] + 1 <= move_time[lower]
             for upper, lower in source_precedence
         ),
-        name="SourceTopOnly"
+        name="SourceTopOnly",
     )
 
     # ------------------------------------------------------------
@@ -186,7 +186,7 @@ def solve_scenario_sequential_gurobi(
     for s in range(M - 1):
         model.addConstr(
             gp.quicksum(x[i, s] for i in I) >= gp.quicksum(x[i, s + 1] for i in I),
-            name=f"SymBreak_{s}"
+            name=f"SymBreak_{s}",
         )
 
     # ------------------------------------------------------------
@@ -198,12 +198,12 @@ def solve_scenario_sequential_gurobi(
     for i, j in pairs:
         model.addConstr(
             move_time[i] - move_time[j] >= 1 - big_m * (1 - after[i, j]),
-            name=f"AfterDef1_{i}_{j}"
+            name=f"AfterDef1_{i}_{j}",
         )
 
         model.addConstr(
             move_time[j] - move_time[i] >= 1 - big_m * after[i, j],
-            name=f"AfterDef2_{i}_{j}"
+            name=f"AfterDef2_{i}_{j}",
         )
 
     # ------------------------------------------------------------
@@ -216,8 +216,7 @@ def solve_scenario_sequential_gurobi(
             model.addConstr(p[i, j, s] >= x[i, s] + x[j, s] - 1)
 
         model.addConstr(
-            same[i, j] == gp.quicksum(p[i, j, s] for s in S),
-            name=f"SameDest_{i}_{j}"
+            same[i, j] == gp.quicksum(p[i, j, s] for s in S), name=f"SameDest_{i}_{j}"
         )
 
     # ------------------------------------------------------------
@@ -257,7 +256,7 @@ def solve_scenario_sequential_gurobi(
     # - destination은 symmetry breaking을 만족하도록 앞 파일부터 순차 배정
     # ------------------------------------------------------------
 
-    random.seed(42)
+    rng = random.Random(seed)
 
     # source pile별 남은 강판 목록 구성
     # pileseq가 클수록 위에 있다고 가정
@@ -270,11 +269,10 @@ def solve_scenario_sequential_gurobi(
 
     while len(start_order) < N:
         candidate_piles = [
-            pileno for pileno, items in source_remaining.items()
-            if len(items) > 0
+            pileno for pileno, items in source_remaining.items() if len(items) > 0
         ]
 
-        selected_pileno = random.choice(candidate_piles)
+        selected_pileno = rng.choice(candidate_piles)
 
         # 가장 위 강판 선택
         plate_idx, _ = source_remaining[selected_pileno].pop()
@@ -311,7 +309,9 @@ def solve_scenario_sequential_gurobi(
         x[plate_idx, current_s].Start = 1
         dest_load[current_s] += 1
 
-    print("[MIP START] random top-only source order + sequential destination assignment")
+    print(
+        "[MIP START] random top-only source order + sequential destination assignment"
+    )
     print("[MIP START] destination loads:", dest_load)
 
     # ------------------------------------------------------------

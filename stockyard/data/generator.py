@@ -2,7 +2,6 @@ import random
 import pandas as pd
 import numpy as np
 import os
-import math
 
 try:
     from stockyard.config import get_cfg
@@ -27,8 +26,12 @@ class Plate:
         self.outbound = outbound
         self.unitw = unitw
 
-        self.planned_outbound = planned_outbound if planned_outbound is not None else outbound
-        self.confirmed_outbound = confirmed_outbound if confirmed_outbound is not None else outbound
+        self.planned_outbound = (
+            planned_outbound if planned_outbound is not None else outbound
+        )
+        self.confirmed_outbound = (
+            confirmed_outbound if confirmed_outbound is not None else outbound
+        )
         self.confirm_time = confirm_time
 
         self.from_pile = None
@@ -164,7 +167,9 @@ def _build_inbound_series(
 
 def _sample_synthetic_lead_time(cfg, inbound_val):
     """Generic uniform dwell time; no industrial distribution is disclosed."""
-    return random.randint(max(1, cfg.lead_time_min), max(1, cfg.lead_time_min, cfg.lead_time_max))
+    return random.randint(
+        max(1, cfg.lead_time_min), max(1, cfg.lead_time_min, cfg.lead_time_max)
+    )
 
 
 def generate_reshuffle_plan(
@@ -203,7 +208,9 @@ def generate_reshuffle_plan(
     # ------------------------------------------------------------
     # 1. 최대 적재 높이 설정
     # ------------------------------------------------------------
-    max_stack_limit = max_stack_override if max_stack_override is not None else cfg.max_stack
+    max_stack_limit = (
+        max_stack_override if max_stack_override is not None else cfg.max_stack
+    )
     max_stack_limit = int(max_stack_limit)
 
     # ------------------------------------------------------------
@@ -255,7 +262,9 @@ def generate_reshuffle_plan(
     requested_demand = n_from * int(n_plates_reshuffle)
 
     if total_capacity <= 0:
-        raise ValueError("Generation Failed: destination capacity is zero after obstacle placement.")
+        raise ValueError(
+            "Generation Failed: destination capacity is zero after obstacle placement."
+        )
 
     hard_mode_ratio = float(getattr(cfg, "hard_mode_ratio", 0.90))
     actual_plates_per_pile = int(n_plates_reshuffle)
@@ -294,13 +303,17 @@ def generate_reshuffle_plan(
             selected_to = random.choice(feasible_targets)
             capacity_map[selected_to] -= 1
 
-            base_rows.append({
-                "pileno": fp,
-                "pileseq": str(i).zfill(3),
-                "markno": f"SP-{fp}-{i}",
-                "unitw": round(float(np.random.uniform(cfg.unitw_min, cfg.unitw_max)), 2),
-                "topile": selected_to,
-            })
+            base_rows.append(
+                {
+                    "pileno": fp,
+                    "pileseq": str(i).zfill(3),
+                    "markno": f"SP-{fp}-{i}",
+                    "unitw": round(
+                        float(np.random.uniform(cfg.unitw_min, cfg.unitw_max)), 2
+                    ),
+                    "topile": selected_to,
+                }
+            )
 
     if len(base_rows) == 0:
         return pd.DataFrame([])
@@ -348,18 +361,20 @@ def generate_reshuffle_plan(
         confirmed_outbound_val = outbound_val
         confirm_time_val = None
 
-        df_rows.append({
-            "pileno": row["pileno"],
-            "pileseq": row["pileseq"],
-            "markno": row["markno"],
-            "unitw": row["unitw"],
-            "inbound": inbound_val,
-            "outbound": confirmed_outbound_val,
-            "planned_outbound": planned_outbound_val,
-            "confirmed_outbound": confirmed_outbound_val,
-            "confirm_time": confirm_time_val,
-            "topile": row["topile"],
-        })
+        df_rows.append(
+            {
+                "pileno": row["pileno"],
+                "pileseq": row["pileseq"],
+                "markno": row["markno"],
+                "unitw": row["unitw"],
+                "inbound": inbound_val,
+                "outbound": confirmed_outbound_val,
+                "planned_outbound": planned_outbound_val,
+                "confirmed_outbound": confirmed_outbound_val,
+                "confirm_time": confirm_time_val,
+                "topile": row["topile"],
+            }
+        )
 
     df = pd.DataFrame(df_rows)
 
@@ -367,7 +382,9 @@ def generate_reshuffle_plan(
     # 9. 안전성 검사
     # ------------------------------------------------------------
     if len(df) > 0:
-        df["inbound"] = pd.to_numeric(df["inbound"], errors="coerce").fillna(1).astype(int)
+        df["inbound"] = (
+            pd.to_numeric(df["inbound"], errors="coerce").fillna(1).astype(int)
+        )
 
         df["outbound"] = (
             pd.to_numeric(df["outbound"], errors="coerce")

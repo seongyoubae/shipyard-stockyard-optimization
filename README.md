@@ -42,7 +42,7 @@
 
 출발지·도착지 pile과 강재의 입고·반출 정보를 관리하는 환경을 구현했습니다. 상태에는 상단 강재의 반출일, 깊은 층의 요약 통계, 예정 입고 정보, 시간과 간섭 정보를 포함합니다.
 
-출발지가 비어 있거나 도착지의 적재 높이가 한계에 도달한 경우 해당 선택을 행동 마스크로 제외합니다. 환경에는 동적 입고와 반출일 정보 갱신을 처리하는 기능도 포함되어 있습니다.
+출발지가 비어 있거나 도착지의 적재 높이가 한계에 도달한 경우 해당 선택을 행동 마스크로 제외합니다. 동적 입고 시나리오에서는 시간에 따라 새 강재가 출발지에 도착하며, 입고 대기 중에는 다음 입고 시점으로 진행합니다.
 
 ### Priority-aware GRU
 
@@ -76,7 +76,7 @@
 | Ant Colony Optimization | 휴리스틱 초기해와 페로몬을 활용한 탐색 |
 | Gurobi MIP | 출발지 이동 순서와 도착지 적치 순서를 반영한 수리최적화 |
 
-평가 결과는 **최종 blocking pairs, 이동 수, 실행시간, 종료 상태**로 기록합니다. Gurobi는 종료 상태와 optimality gap도 확인할 수 있습니다. 공개 benchmark에서 SA·ACO·Gurobi는 정적 시나리오를 대상으로 합니다.
+평가 결과는 **최종 blocking pairs, 이동 수, 실행시간, 종료 상태**로 기록합니다. 완료 여부와 seed, 적재 높이, 강재 수도 함께 저장하며, 그래프에는 완료된 결과만 표시합니다. Gurobi는 종료 상태와 optimality gap도 확인할 수 있습니다. 공개 benchmark에서 SA·ACO·Gurobi는 정적 시나리오를 대상으로 합니다.
 
 Blocking pairs는 반출 순서의 간섭 정도를 나타내는 지표입니다. 실제 추가 크레인 이동 횟수와 동일한 값으로 해석하지 않습니다.
 
@@ -158,11 +158,13 @@ python -m stockyard.evaluation.benchmark --data outputs/tiny.csv --methods gurob
 
 ## Validation
 
-환경의 최상단 이동·용량 제한·행동 마스크·동적 입고 처리와, GAE 및 모델·평가 연결을 확인하는 테스트를 제공합니다. 합성 데이터 생성부터 PPO 짧은 학습, baseline 실행, 결과 시각화까지 로컬에서 확인했습니다. Gurobi는 강재 4장의 소규모 예제를 실행했습니다.
+환경 제약과 GAE, CSV 입력 검증, SA 계획 재실행, encoder 변형 및 모델·평가 연결을 확인하는 **48개 테스트**를 제공합니다. 합성 데이터 생성부터 PPO 짧은 학습, baseline 실행, 결과 시각화까지 로컬에서 확인했습니다. 원본 연구 학습 코드도 작은 설정으로 실행했고, Gurobi는 강재 4장의 소규모 예제를 확인했습니다.
 
 ```bash
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
+python -m ruff check stockyard tests
+python -m ruff format --check stockyard tests
 ```
 
 GitHub Actions에는 테스트와 예제 실행 workflow를 구성했습니다. 실행 환경과 검증 범위는 [검증 기록](docs/VALIDATION.md)에서 확인할 수 있습니다.
@@ -172,5 +174,6 @@ GitHub Actions에는 테스트와 예제 실행 workflow를 구성했습니다. 
 실제 조선소 데이터와 연구 체크포인트는 공개하지 않고, 독립적으로 생성한 합성 데이터를 제공합니다. 원본 연구 구현과 공개 실행을 위해 추가한 코드는 [구현 이력](docs/PROVENANCE.md)에 구분해 정리했습니다.
 
 - [문제 정의와 방법론](docs/METHODOLOGY.md)
+- [샘플 데이터와 평가 결과 형식](docs/DATA_SCHEMA.md)
 - [원본 코드 및 공개용 수정 사항](docs/PROVENANCE.md)
 - [실행 검증 기록](docs/VALIDATION.md)

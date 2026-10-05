@@ -1,23 +1,22 @@
-import numpy as np
-
 import copy
 import math
 import random
 import time
-import matplotlib.pyplot as plt
 
-from stockyard.baselines.legacy.sa_move import *
+from stockyard.baselines.legacy.sa_move import SA_move
+
 
 class Annealer(object):
     """Performs simulated annealing by calling functions to calculate
     energy and make moves on a state.  The temperature schedule for
     annealing may be provided manually or estimated automatically.
     """
+
     # defaults
     Tmax = 25000.0
     Tmin = 2.5
     steps = 50000
-    copy_strategy = 'deepcopy'
+    copy_strategy = "deepcopy"
     user_exit = False
     save_state_on_exit = False
 
@@ -25,8 +24,10 @@ class Annealer(object):
         if initial_state is not None:
             self.state = self.copy_state(initial_state)
         else:
-            raise ValueError('No valid values supplied for neither \
-            initial_state nor load_state')
+            raise ValueError(
+                "No valid values supplied for neither \
+            initial_state nor load_state"
+            )
 
         self.piles_from = piles_from
         self.piles_to = piles_to
@@ -52,21 +53,22 @@ class Annealer(object):
         return reversal, piles_to_copy
 
     def set_schedule(self, schedule):
-        self.Tmax = schedule['tmax']
-        self.Tmin = schedule['tmin']
-        self.steps = int(schedule['steps'])
+        self.Tmax = schedule["tmax"]
+        self.Tmin = schedule["tmin"]
+        self.steps = int(schedule["steps"])
 
     def copy_state(self, state):
-        if self.copy_strategy == 'deepcopy':
+        if self.copy_strategy == "deepcopy":
             return copy.deepcopy(state)
-        elif self.copy_strategy == 'slice':
+        elif self.copy_strategy == "slice":
             return state[:]
-        elif self.copy_strategy == 'method':
+        elif self.copy_strategy == "method":
             return state.copy()
         else:
-            raise RuntimeError('No implementation found for ' +
-                               'the self.copy_strategy "%s"' %
-                               self.copy_strategy)
+            raise RuntimeError(
+                "No implementation found for "
+                + 'the self.copy_strategy "%s"' % self.copy_strategy
+            )
 
     def anneal(self):
         step = 0
@@ -74,8 +76,10 @@ class Annealer(object):
 
         # Precompute factor for exponential cooling from Tmax to Tmin
         if self.Tmin <= 0.0:
-            raise Exception('Exponential cooling requires a minimum "\
-                "temperature greater than zero.')
+            raise Exception(
+                'Exponential cooling requires a minimum "\
+                "temperature greater than zero.'
+            )
         Tfactor = -math.log(self.Tmax / self.Tmin)
 
         # Note initial state
@@ -85,7 +89,6 @@ class Annealer(object):
         prevEnergy = E
         self.best_state = self.copy_state(self.state)
         self.best_energy = E
-        trials = accepts = improves = 0
 
         while step < self.steps:
             step += 1
@@ -96,7 +99,6 @@ class Annealer(object):
                 dE = E - prevEnergy
             else:
                 E += dE
-            trials += 1
             if dE > 0.0 and math.exp(-dE / T) < random.random():
                 # Restore previous state
                 self.state = self.copy_state(prevState)
@@ -109,9 +111,8 @@ class Annealer(object):
                     self.best_state = self.copy_state(self.state)
                     self.best_energy = E
 
-            self.time_list.append(time.time() - start)
+            self.time_list.append(time.time() - self.start)
             self.energy_list.append(E)
-
 
         self.state = self.copy_state(self.best_state)
 

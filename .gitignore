@@ -28,3 +28,7 @@ data/raw/
 data/private/
 data/processed/
 *.log
+.ruff_cache/
+build/
+dist/
+*.egg-info/

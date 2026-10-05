@@ -12,10 +12,8 @@ import numpy as np
 import random
 import csv
 import datetime
-import copy
 import pandas as pd
 import gc
-from collections import defaultdict
 
 # 필수 모듈 임포트
 try:
@@ -24,11 +22,9 @@ try:
     from stockyard.models.network import SteelPlateConditionalMLPModel
     from stockyard.evaluation.policy import evaluate_policy
     from stockyard.data.generator import Plate, generate_reshuffle_plan
-except ImportError as e:
-    print(f"[오류] 필수 모듈을 찾을 수 없습니다: {e}")
-    exit()
+except ImportError:
+    raise
 
-import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from torch.optim.lr_scheduler import LambdaLR
@@ -43,13 +39,16 @@ except ImportError:
 
 DEFAULT_BASE_SEED = 42
 
+
 def calculate_blocking_cnt(pile):
-    if len(pile) <= 1: return 0
+    if len(pile) <= 1:
+        return 0
     cnt = 0
     outbounds = [p.outbound for p in pile]
     for i in range(len(outbounds)):
         for j in range(i + 1, len(outbounds)):
-            if outbounds[i] < outbounds[j]: cnt += 1
+            if outbounds[i] < outbounds[j]:
+                cnt += 1
     return cnt
 
 
@@ -64,10 +63,11 @@ def apply_s1_heuristic(original_plates, n_piles, max_stack, strategy):
             best_idx = random.choice(valid) if valid else 0
 
         elif strategy == "H1":
-            min_gap = float('inf')
+            min_gap = float("inf")
             candidates = []
             for k, v in piles.items():
-                if len(v) >= max_stack: continue
+                if len(v) >= max_stack:
+                    continue
                 if not v:
                     gap = 9999
                 else:
@@ -87,7 +87,7 @@ def apply_s1_heuristic(original_plates, n_piles, max_stack, strategy):
                 if empties:
                     best_idx = empties[0]
                 else:
-                    min_rev = float('inf')
+                    min_rev = float("inf")
                     rev_cands = []
                     for k, v in piles.items():
                         if len(v) < max_stack:
@@ -103,10 +103,11 @@ def apply_s1_heuristic(original_plates, n_piles, max_stack, strategy):
                 best_idx = random.choice(candidates)
 
         elif strategy == "H2":
-            min_blk = float('inf')
+            min_blk = float("inf")
             candidates = []
             for k, v in piles.items():
-                if len(v) >= max_stack: continue
+                if len(v) >= max_stack:
+                    continue
                 blk = calculate_blocking_cnt(v + [plate])
                 if blk < min_blk:
                     min_blk = blk
@@ -116,10 +117,11 @@ def apply_s1_heuristic(original_plates, n_piles, max_stack, strategy):
             best_idx = random.choice(candidates) if candidates else 0
 
         elif strategy == "H3":
-            min_top = float('inf')
+            min_top = float("inf")
             candidates = []
             for k, v in piles.items():
-                if len(v) >= max_stack: continue
+                if len(v) >= max_stack:
+                    continue
                 top_val = v[-1].outbound if v else 99999
                 if top_val < min_top:
                     min_top = top_val
@@ -129,10 +131,11 @@ def apply_s1_heuristic(original_plates, n_piles, max_stack, strategy):
             best_idx = random.choice(candidates) if candidates else 0
 
         elif strategy == "Reverse_H1":
-            min_gap = float('inf')
+            min_gap = float("inf")
             candidates = []
             for k, v in piles.items():
-                if len(v) >= max_stack: continue
+                if len(v) >= max_stack:
+                    continue
                 if not v:
                     gap = 9999
                 else:
@@ -161,6 +164,7 @@ def apply_s1_heuristic(original_plates, n_piles, max_stack, strategy):
         plate.from_pile = str(best_idx)
 
     return original_plates
+
 
 class RewardNormalizer:
     def __init__(self, num_envs):
@@ -195,6 +199,7 @@ def set_seed(seed):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
 
+
 def snapshot_rng_state():
     state = {
         "python": random.getstate(),
@@ -216,19 +221,23 @@ def restore_rng_state(state):
     if torch.cuda.is_available() and "cuda" in state:
         torch.cuda.set_rng_state_all(state["cuda"])
 
+
 def build_fixed_anchor_eval_scenarios():
     return [
-    {"name": "Basic_15x15", "nf": 15, "nt": 15, "ppp": 15, "obs": 10},
-    {"name": "Mini_10x5",   "nf": 10, "nt": 5,  "ppp": 15, "obs": 10},
-    {"name": "Lite_20x9",   "nf": 20, "nt": 9,  "ppp": 15, "obs": 20},
-    {"name": "HELL_20x8",   "nf": 20, "nt": 8,  "ppp": 15, "obs": 20},
-]
+        {"name": "Basic_15x15", "nf": 15, "nt": 15, "ppp": 15, "obs": 10},
+        {"name": "Mini_10x5", "nf": 10, "nt": 5, "ppp": 15, "obs": 10},
+        {"name": "Lite_20x9", "nf": 20, "nt": 9, "ppp": 15, "obs": 20},
+        {"name": "HELL_20x8", "nf": 20, "nt": 8, "ppp": 15, "obs": 20},
+    ]
+
 
 def stable_name_seed(name):
     return sum((i + 1) * ord(ch) for i, ch in enumerate(str(name)))
 
 
-def generate_schedule_from_scenario(cfg, max_stack_limit, nf, nt, target_ppp, obs, s1_strategy="Random"):
+def generate_schedule_from_scenario(
+    cfg, max_stack_limit, nf, nt, target_ppp, obs, s1_strategy="Random"
+):
     total_capacity = nt * max_stack_limit
     safe_capacity = (total_capacity - obs) * 0.90
     calculated_safe_ppp = int(safe_capacity / max(nf, 1))
@@ -251,31 +260,38 @@ def generate_schedule_from_scenario(cfg, max_stack_limit, nf, nt, target_ppp, ob
             # )
 
             df_plan = generate_reshuffle_plan(
-                rows=['A', 'B'],
+                rows=["A", "B"],
                 n_from_piles_reshuffle=nf,
                 n_to_piles_reshuffle=nt,
                 n_plates_reshuffle=real_ppp,
                 safety_margin=cfg.safety_margin,
                 max_stack_override=max_stack_limit,
                 fixed_obstacles_count=obs,
-                initial_stock_ratio=cfg.initial_stock_ratio
+                initial_stock_ratio=cfg.initial_stock_ratio,
             )
 
             schedule = []
             for _, row in df_plan.iterrows():
                 p = Plate(
-                    id=row['markno'] if 'markno' in df_plan.columns else row['pileno'],
-                    inbound=row['inbound'],
-                    outbound=row['outbound'],
-                    unitw=row['unitw'],
-                    planned_outbound=row['planned_outbound'] if 'planned_outbound' in df_plan.columns else row['outbound'],
-                    confirmed_outbound=row['confirmed_outbound'] if 'confirmed_outbound' in df_plan.columns else row['outbound'],
-                    confirm_time=row['confirm_time'] if (
-                        'confirm_time' in df_plan.columns and pd.notna(row['confirm_time'])
-                    ) else None,
+                    id=row["markno"] if "markno" in df_plan.columns else row["pileno"],
+                    inbound=row["inbound"],
+                    outbound=row["outbound"],
+                    unitw=row["unitw"],
+                    planned_outbound=row["planned_outbound"]
+                    if "planned_outbound" in df_plan.columns
+                    else row["outbound"],
+                    confirmed_outbound=row["confirmed_outbound"]
+                    if "confirmed_outbound" in df_plan.columns
+                    else row["outbound"],
+                    confirm_time=row["confirm_time"]
+                    if (
+                        "confirm_time" in df_plan.columns
+                        and pd.notna(row["confirm_time"])
+                    )
+                    else None,
                 )
-                p.from_pile = str(row['pileno']).strip()
-                p.topile = str(row['topile']).strip()
+                p.from_pile = str(row["pileno"]).strip()
+                p.topile = str(row["topile"]).strip()
                 schedule.append(p)
 
             schedule = apply_s1_heuristic(schedule, nf, max_stack_limit, s1_strategy)
@@ -286,14 +302,25 @@ def generate_schedule_from_scenario(cfg, max_stack_limit, nf, nt, target_ppp, ob
             continue
 
 
-def run_scenario_benchmark(model, device, cfg, stack_limit, scenarios, episodes, seed_prefix, strategy="Random"):
+def run_scenario_benchmark(
+    model, device, cfg, stack_limit, scenarios, episodes, seed_prefix, strategy="Random"
+):
     scores = []
     details = []
 
     for scenario in scenarios:
         name = scenario["name"]
-        nf, nt, target_ppp, obs = scenario["nf"], scenario["nt"], scenario["ppp"], scenario["obs"]
-        scenario_seed = int(seed_prefix) + stable_name_seed(name) % 10000 + stable_name_seed(strategy) % 1000
+        nf, nt, target_ppp, obs = (
+            scenario["nf"],
+            scenario["nt"],
+            scenario["ppp"],
+            scenario["obs"],
+        )
+        scenario_seed = (
+            int(seed_prefix)
+            + stable_name_seed(name) % 10000
+            + stable_name_seed(strategy) % 1000
+        )
         scenario_metrics = []
         real_ppp_logged = None
 
@@ -306,7 +333,7 @@ def run_scenario_benchmark(model, device, cfg, stack_limit, scenarios, episodes,
                 nt=nt,
                 target_ppp=target_ppp,
                 obs=obs,
-                s1_strategy=strategy
+                s1_strategy=strategy,
             )
             real_ppp_logged = real_ppp
 
@@ -321,10 +348,12 @@ def run_scenario_benchmark(model, device, cfg, stack_limit, scenarios, episodes,
                 max_obstacles=obs,
                 observed_top_n_plates=cfg.OBSERVED_TOP_N_PLATES,
                 num_summary_stats_deeper=cfg.NUM_SUMMARY_STATS_DEEPER,
-                max_steps=cfg.max_steps
+                max_steps=cfg.max_steps,
             )
 
-            _, metric, _ = evaluate_policy(model, [eval_env], device, return_blocked=True)
+            _, metric, _ = evaluate_policy(
+                model, [eval_env], device, return_blocked=True
+            )
             scenario_metrics.append(metric if metric != float("inf") else 1000.0)
 
         avg_score = float(np.mean(scenario_metrics)) if scenario_metrics else 1000.0
@@ -333,6 +362,7 @@ def run_scenario_benchmark(model, device, cfg, stack_limit, scenarios, episodes,
 
     overall = float(np.mean(scores)) if scores else float("inf")
     return overall, details
+
 
 def main():
     base_seed = DEFAULT_BASE_SEED
@@ -372,34 +402,43 @@ def main():
     temp_plate.from_pile = "TMP_FROM"
     temp_plate.topile = "TMP_TO"
 
-    temp_env = Locating(inbound_plates=[temp_plate],
-                        max_stack=50,
-                        observed_top_n_plates=cfg.OBSERVED_TOP_N_PLATES,
-                        num_summary_stats_deeper=cfg.NUM_SUMMARY_STATS_DEEPER,
-                        gamma=cfg.gamma,
-                        max_steps=cfg.max_steps)
+    temp_env = Locating(
+        inbound_plates=[temp_plate],
+        max_stack=50,
+        observed_top_n_plates=cfg.OBSERVED_TOP_N_PLATES,
+        num_summary_stats_deeper=cfg.NUM_SUMMARY_STATS_DEEPER,
+        gamma=cfg.gamma,
+        max_steps=cfg.max_steps,
+    )
     actual_pile_feature_dim = temp_env.actual_pile_feature_dim
     del temp_env
 
     model = SteelPlateConditionalMLPModel(
-        embed_dim=cfg.embed_dim, num_actor_layers=cfg.num_actor_layers,
-        num_critic_layers=cfg.num_critic_layers, actor_init_std=cfg.actor_init_std,
-        critic_init_std=cfg.critic_init_std, pile_feature_dim=actual_pile_feature_dim,
+        embed_dim=cfg.embed_dim,
+        num_actor_layers=cfg.num_actor_layers,
+        num_critic_layers=cfg.num_critic_layers,
+        actor_init_std=cfg.actor_init_std,
+        critic_init_std=cfg.critic_init_std,
+        pile_feature_dim=actual_pile_feature_dim,
         num_heads=cfg.num_heads,
-        encoder_type=cfg.encoder_type
+        encoder_type=cfg.encoder_type,
     ).to(device)
 
     if cfg.load_model and os.path.exists(cfg.model_path):
         try:
             loaded_data = torch.load(cfg.model_path, map_location=device)
-            state_dict = loaded_data.get('model_state_dict', loaded_data)
+            state_dict = loaded_data.get("model_state_dict", loaded_data)
             model.load_state_dict(state_dict)
             print("Model loaded successfully for fine-tuning.")
         except Exception as e:
             print(f"[Warning] Failed to load model: {e}")
 
-    actor_optimizer = optim.Adam(model.actor_parameters(), lr=cfg.actor_lr, weight_decay=cfg.weight_decay)
-    critic_optimizer = optim.Adam(model.critic_parameters(), lr=cfg.critic_lr, weight_decay=cfg.weight_decay)
+    actor_optimizer = optim.Adam(
+        model.actor_parameters(), lr=cfg.actor_lr, weight_decay=cfg.weight_decay
+    )
+    critic_optimizer = optim.Adam(
+        model.critic_parameters(), lr=cfg.critic_lr, weight_decay=cfg.weight_decay
+    )
 
     lr_lambda = lambda epoch: max(0.0, 1.0 - (epoch / float(cfg.n_epoch)))
     actor_lr_sched = LambdaLR(actor_optimizer, lr_lambda=lr_lambda)
@@ -408,8 +447,19 @@ def main():
     log_filename = cfg.log_file if cfg.log_file else f"train_log_{timestamp}.csv"
     with open(log_filename, mode="w", newline="") as f:
         csv.writer(f).writerow(
-            ["Epoch", "Total_Steps", "Avg_Episode_Reward", "Avg_Loss", "Actor_Loss", "Critic_Loss", "Entropy_Loss",
-             "Avg_Final_Reversals", "Avg_Crane_Moves", "Avg_Obstacles"])
+            [
+                "Epoch",
+                "Total_Steps",
+                "Avg_Episode_Reward",
+                "Avg_Loss",
+                "Actor_Loss",
+                "Critic_Loss",
+                "Entropy_Loss",
+                "Avg_Final_Reversals",
+                "Avg_Crane_Moves",
+                "Avg_Obstacles",
+            ]
+        )
 
     reward_normalizer = RewardNormalizer(num_envs=cfg.num_envs)
     global_step = 0
@@ -424,7 +474,9 @@ def main():
 
             envs = []
             if epoch % 10 == 0:
-                print(f"Epoch {epoch}: Generating Diverse Environments (Mixed: Inbound + Reshuffle)...")
+                print(
+                    f"Epoch {epoch}: Generating Diverse Environments (Mixed: Inbound + Reshuffle)..."
+                )
 
             scenario_counter = Counter()
             s1_counter = Counter()
@@ -441,7 +493,7 @@ def main():
                         # ------------------------------------------------
                         # 1) 아주 약한 inbound training branch
                         # ------------------------------------------------
-                        is_inbound_training = (random.random() < INBOUND_TRAINING_PROB)
+                        is_inbound_training = random.random() < INBOUND_TRAINING_PROB
 
                         if is_inbound_training:
                             scenario_type = "inbound_training"
@@ -466,7 +518,7 @@ def main():
                             s1_strategy = random.choices(
                                 population=["Random", "H1", "H2", "Reverse_H1", "H3"],
                                 weights=[0.30, 0.25, 0.20, 0.15, 0.10],
-                                k=1
+                                k=1,
                             )[0]
                             r = random.random()
 
@@ -508,7 +560,9 @@ def main():
 
                         # 2. 이동 강판 수(ppp) 데드락 방지
                         source_safe_cap = max(1, current_max_stack - 1)
-                        dest_safe_cap = max(1, int((n_t * current_max_stack - obs) * 0.90))
+                        dest_safe_cap = max(
+                            1, int((n_t * current_max_stack - obs) * 0.90)
+                        )
                         max_ppp_by_dest = max(1, dest_safe_cap // max(n_f, 1))
                         ppp = min(ppp, source_safe_cap, max_ppp_by_dest)
 
@@ -516,54 +570,59 @@ def main():
                         # 3) 실제 데이터 생성
                         # ------------------------------------------------
                         df_plan = generate_reshuffle_plan(
-                            rows=['A', 'B'],
+                            rows=["A", "B"],
                             n_from_piles_reshuffle=n_f,
                             n_to_piles_reshuffle=n_t,
                             n_plates_reshuffle=ppp,
                             safety_margin=cfg.safety_margin,
                             max_stack_override=current_max_stack,
                             fixed_obstacles_count=obs,
-                            initial_stock_ratio=cfg.initial_stock_ratio
+                            initial_stock_ratio=cfg.initial_stock_ratio,
                         )
 
                         train_schedule = []
                         for _, row in df_plan.iterrows():
                             p = Plate(
-                                id=row['markno'] if 'markno' in df_plan.columns else row['pileno'],
-                                inbound=row['inbound'],
-                                outbound=row['outbound'],
-                                unitw=row['unitw'],
-                                planned_outbound=row['planned_outbound'] if 'planned_outbound' in df_plan.columns else
-                                row['outbound'],
-                                confirmed_outbound=row[
-                                    'confirmed_outbound'] if 'confirmed_outbound' in df_plan.columns else row[
-                                    'outbound'],
-                                confirm_time=row['confirm_time'] if (
-                                        'confirm_time' in df_plan.columns and pd.notna(row['confirm_time'])
-                                ) else None,
+                                id=row["markno"]
+                                if "markno" in df_plan.columns
+                                else row["pileno"],
+                                inbound=row["inbound"],
+                                outbound=row["outbound"],
+                                unitw=row["unitw"],
+                                planned_outbound=row["planned_outbound"]
+                                if "planned_outbound" in df_plan.columns
+                                else row["outbound"],
+                                confirmed_outbound=row["confirmed_outbound"]
+                                if "confirmed_outbound" in df_plan.columns
+                                else row["outbound"],
+                                confirm_time=row["confirm_time"]
+                                if (
+                                    "confirm_time" in df_plan.columns
+                                    and pd.notna(row["confirm_time"])
+                                )
+                                else None,
                             )
-                            p.from_pile = str(row['pileno']).strip()
-                            p.topile = str(row['topile']).strip()
+                            p.from_pile = str(row["pileno"]).strip()
+                            p.topile = str(row["topile"]).strip()
                             train_schedule.append(p)
 
                         train_schedule = apply_s1_heuristic(
-                            train_schedule,
-                            n_f,
-                            current_max_stack,
-                            s1_strategy
+                            train_schedule, n_f, current_max_stack, s1_strategy
                         )
 
-                        envs.append(Locating(
-                            max_stack=current_max_stack,
-                            inbound_plates=train_schedule,
-                            crane_penalty=cfg.crane_penalty,
-                            min_obstacles=obs,
-                            max_obstacles=obs,
-                            observed_top_n_plates=cfg.OBSERVED_TOP_N_PLATES,
-                            num_summary_stats_deeper=cfg.NUM_SUMMARY_STATS_DEEPER,
-                            gamma=cfg.gamma,
-                            max_steps=cfg.max_steps
-                        ))
+                        envs.append(
+                            Locating(
+                                max_stack=current_max_stack,
+                                inbound_plates=train_schedule,
+                                crane_penalty=cfg.crane_penalty,
+                                min_obstacles=obs,
+                                max_obstacles=obs,
+                                observed_top_n_plates=cfg.OBSERVED_TOP_N_PLATES,
+                                num_summary_stats_deeper=cfg.NUM_SUMMARY_STATS_DEEPER,
+                                gamma=cfg.gamma,
+                                max_steps=cfg.max_steps,
+                            )
+                        )
 
                         scenario_counter[scenario_type] += 1
                         s1_counter[s1_strategy] += 1
@@ -590,10 +649,17 @@ def main():
             "future": [],
             "step": [],
         }
-        states = torch.stack([env.reset(shuffle_schedule=False) for env in envs]).to(device)
+        states = torch.stack([env.reset(shuffle_schedule=False) for env in envs]).to(
+            device
+        )
         episode_rewards = torch.zeros(cfg.num_envs, device=device)
 
-        finished_episode_rewards, finished_episode_reversals, finished_episode_crane_moves, finished_episode_obstacles = [], [], [], []
+        (
+            finished_episode_rewards,
+            finished_episode_reversals,
+            finished_episode_crane_moves,
+            finished_episode_obstacles,
+        ) = [], [], [], []
         finished_episode_count = 0
         error_terminated_count = 0
         done_reason_counter = Counter()
@@ -608,12 +674,15 @@ def main():
             d_deadlock = ~dest_mask_tensor.any(dim=1)
             actor_valid_tensor = ~(s_deadlock | d_deadlock)
 
-            if s_deadlock.any(): source_mask_tensor[s_deadlock, 0] = True
-            if d_deadlock.any(): dest_mask_tensor[d_deadlock, 0] = True
+            if s_deadlock.any():
+                source_mask_tensor[s_deadlock, 0] = True
+            if d_deadlock.any():
+                dest_mask_tensor[d_deadlock, 0] = True
 
             with torch.no_grad():
-                actions, logprobs, values, _ = model.act_batch(states, source_mask_tensor, dest_mask_tensor,
-                                                               greedy=False)
+                actions, logprobs, values, _ = model.act_batch(
+                    states, source_mask_tensor, dest_mask_tensor, greedy=False
+                )
 
             next_states_list = []
             for i, env in enumerate(envs):
@@ -621,20 +690,24 @@ def main():
                 next_state, reward, done, info = env.step(action_i)
                 reward_components["shape"].append(info.get("shaping_reward", 0.0))
                 reward_components["sev"].append(info.get("severity_penalty", 0.0))
-                reward_components["future"].append(info.get("future_conflict_penalty", 0.0))
+                reward_components["future"].append(
+                    info.get("future_conflict_penalty", 0.0)
+                )
                 reward_components["step"].append(info.get("step_reward_raw", reward))
 
-                rollout_buffer.append({
-                    'state': states[i].clone().cpu(),
-                    'action': actions[i].clone().cpu(),
-                    'logprob': logprobs[i].clone().cpu(),
-                    'value': values[i].clone().cpu(),
-                    'reward': reward,
-                    'done': done,
-                    'source_mask': source_mask_tensor[i].clone().cpu(),
-                    'dest_mask': dest_mask_tensor[i].clone().cpu(),
-                    'actor_valid': actor_valid_tensor[i].clone().cpu()
-                })
+                rollout_buffer.append(
+                    {
+                        "state": states[i].clone().cpu(),
+                        "action": actions[i].clone().cpu(),
+                        "logprob": logprobs[i].clone().cpu(),
+                        "value": values[i].clone().cpu(),
+                        "reward": reward,
+                        "done": done,
+                        "source_mask": source_mask_tensor[i].clone().cpu(),
+                        "dest_mask": dest_mask_tensor[i].clone().cpu(),
+                        "actor_valid": actor_valid_tensor[i].clone().cpu(),
+                    }
+                )
 
                 episode_rewards[i] += reward
                 next_states_list.append(next_state)
@@ -643,7 +716,9 @@ def main():
                     finished_episode_count += 1
                     if isinstance(info, dict) and ("error" in info):
                         error_terminated_count += 1
-                    done_reason_counter[str(info.get('episode_end_reason', 'unknown'))] += 1
+                    done_reason_counter[
+                        str(info.get("episode_end_reason", "unknown"))
+                    ] += 1
                     finished_episode_rewards.append(episode_rewards[i].item())
                     final_rev = info.get("final_blocking_metric", None)
 
@@ -659,12 +734,14 @@ def main():
             states = torch.stack(next_states_list).to(device)
 
         # --- GAE 계산 ---
-        original_rewards_np = np.array([d['reward'] for d in rollout_buffer])
+        original_rewards_np = np.array([d["reward"] for d in rollout_buffer])
         reward_normalizer.update(original_rewards_np)
         normalized_rewards_np = reward_normalizer.normalize(original_rewards_np)
 
         with torch.no_grad():
-            last_s_masks_list, last_d_masks_list = zip(*[env.get_masks() for env in envs])
+            last_s_masks_list, last_d_masks_list = zip(
+                *[env.get_masks() for env in envs]
+            )
             last_source_mask_tensor = torch.stack(last_s_masks_list).to(device)
             last_dest_mask_tensor = torch.stack(last_d_masks_list).to(device)
 
@@ -677,10 +754,7 @@ def main():
                 last_dest_mask_tensor[last_d_deadlock, 0] = True
 
             _, _, last_values, _ = model.act_batch(
-                states,
-                last_source_mask_tensor,
-                last_dest_mask_tensor,
-                greedy=False
+                states, last_source_mask_tensor, last_dest_mask_tensor, greedy=False
             )
 
         advantages = torch.zeros(len(rollout_buffer), device=device)
@@ -689,18 +763,24 @@ def main():
         for t in reversed(range(cfg.T_horizon)):
             for i in range(cfg.num_envs):
                 idx = t * cfg.num_envs + i
-                is_last_step = (t == cfg.T_horizon - 1)
-                next_value = last_values[i] if is_last_step else rollout_buffer[idx + cfg.num_envs]['value'].to(device)
-                curr_value = rollout_buffer[idx]['value'].to(device)
+                is_last_step = t == cfg.T_horizon - 1
+                next_value = (
+                    last_values[i]
+                    if is_last_step
+                    else rollout_buffer[idx + cfg.num_envs]["value"].to(device)
+                )
+                curr_value = rollout_buffer[idx]["value"].to(device)
 
                 reward = normalized_rewards_np[idx]
 
-                done_mask = 1.0 - rollout_buffer[idx]['done']
+                done_mask = 1.0 - rollout_buffer[idx]["done"]
                 delta = reward + cfg.gamma * next_value * done_mask - curr_value
                 gae[i] = delta + cfg.gamma * cfg.lmbda * done_mask * gae[i]
                 advantages[idx] = gae[i]
 
-        all_values = torch.stack([rollout_buffer[i]['value'] for i in range(len(rollout_buffer))]).to(device)
+        all_values = torch.stack(
+            [rollout_buffer[i]["value"] for i in range(len(rollout_buffer))]
+        ).to(device)
         returns = advantages + all_values
         advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
 
@@ -727,36 +807,37 @@ def main():
             np.random.shuffle(indices)
 
             for start in range(0, len(rollout_buffer), cfg.mini_batch_size):
-                minibatch_indices = indices[start:start + cfg.mini_batch_size]
+                minibatch_indices = indices[start : start + cfg.mini_batch_size]
 
-                s_batch = torch.stack([
-                    rollout_buffer[i]["state"] for i in minibatch_indices
-                ]).to(device)
+                s_batch = torch.stack(
+                    [rollout_buffer[i]["state"] for i in minibatch_indices]
+                ).to(device)
 
-                a_batch = torch.stack([
-                    rollout_buffer[i]["action"] for i in minibatch_indices
-                ]).to(device)
+                a_batch = torch.stack(
+                    [rollout_buffer[i]["action"] for i in minibatch_indices]
+                ).to(device)
 
-                logprob_batch = torch.stack([
-                    rollout_buffer[i]["logprob"] for i in minibatch_indices
-                ]).to(device).view(-1)
+                logprob_batch = (
+                    torch.stack(
+                        [rollout_buffer[i]["logprob"] for i in minibatch_indices]
+                    )
+                    .to(device)
+                    .view(-1)
+                )
 
                 adv_batch = advantages[minibatch_indices].to(device).view(-1)
                 td_target_batch = returns[minibatch_indices].to(device).view(-1)
 
-                s_mask_batch = torch.stack([
-                    rollout_buffer[i]["source_mask"] for i in minibatch_indices
-                ]).to(device)
+                s_mask_batch = torch.stack(
+                    [rollout_buffer[i]["source_mask"] for i in minibatch_indices]
+                ).to(device)
 
-                d_mask_batch = torch.stack([
-                    rollout_buffer[i]["dest_mask"] for i in minibatch_indices
-                ]).to(device)
+                d_mask_batch = torch.stack(
+                    [rollout_buffer[i]["dest_mask"] for i in minibatch_indices]
+                ).to(device)
 
                 new_logprob, value, entropy = model.evaluate(
-                    s_batch,
-                    s_mask_batch,
-                    d_mask_batch,
-                    a_batch
+                    s_batch, s_mask_batch, d_mask_batch, a_batch
                 )
 
                 # -------------------------------------------------
@@ -774,14 +855,17 @@ def main():
                 # -------------------------------------------------
                 # 2. 강제 shape 체크
                 # -------------------------------------------------
-                assert new_logprob.shape == logprob_batch.shape, \
+                assert new_logprob.shape == logprob_batch.shape, (
                     f"logprob shape mismatch: new={new_logprob.shape}, old={logprob_batch.shape}"
+                )
 
-                assert value.shape == td_target_batch.shape, \
+                assert value.shape == td_target_batch.shape, (
                     f"value shape mismatch: value={value.shape}, target={td_target_batch.shape}"
+                )
 
-                assert adv_batch.shape == logprob_batch.shape, \
+                assert adv_batch.shape == logprob_batch.shape, (
                     f"advantage shape mismatch: adv={adv_batch.shape}, logprob={logprob_batch.shape}"
+                )
 
                 # -------------------------------------------------
                 # 3. ratio 계산
@@ -790,7 +874,9 @@ def main():
 
                 with torch.no_grad():
                     approx_kl = (logprob_batch - new_logprob).mean().item()
-                    clip_frac = ((ratio - 1.0).abs() > cfg.eps_clip).float().mean().item()
+                    clip_frac = (
+                        ((ratio - 1.0).abs() > cfg.eps_clip).float().mean().item()
+                    )
 
                     total_kl += approx_kl
                     total_clip_frac += clip_frac
@@ -801,9 +887,14 @@ def main():
                 # -------------------------------------------------
                 # 4. valid mask
                 # -------------------------------------------------
-                valid_batch = torch.stack([
-                    rollout_buffer[i]["actor_valid"] for i in minibatch_indices
-                ]).float().to(device).view(-1)
+                valid_batch = (
+                    torch.stack(
+                        [rollout_buffer[i]["actor_valid"] for i in minibatch_indices]
+                    )
+                    .float()
+                    .to(device)
+                    .view(-1)
+                )
 
                 total_valid_ratio += valid_batch.mean().item()
 
@@ -811,26 +902,27 @@ def main():
                 # 5. PPO actor loss
                 # -------------------------------------------------
                 surr1 = ratio * adv_batch
-                surr2 = torch.clamp(
-                    ratio,
-                    1.0 - cfg.eps_clip,
-                    1.0 + cfg.eps_clip
-                ) * adv_batch
+                surr2 = (
+                    torch.clamp(ratio, 1.0 - cfg.eps_clip, 1.0 + cfg.eps_clip)
+                    * adv_batch
+                )
 
                 actor_loss_each = -torch.min(surr1, surr2)
-                actor_loss = (actor_loss_each * valid_batch).sum() / (valid_batch.sum() + 1e-8)
+                actor_loss = (actor_loss_each * valid_batch).sum() / (
+                    valid_batch.sum() + 1e-8
+                )
 
                 # -------------------------------------------------
                 # 6. Critic / Entropy loss
                 # -------------------------------------------------
                 critic_loss = torch.nn.functional.smooth_l1_loss(value, td_target_batch)
 
-                entropy_loss = -(entropy * valid_batch).sum() / (valid_batch.sum() + 1e-8)
+                entropy_loss = -(entropy * valid_batch).sum() / (
+                    valid_batch.sum() + 1e-8
+                )
 
                 loss = (
-                        actor_loss
-                        + cfg.V_coeff * critic_loss
-                        + cfg.E_coeff * entropy_loss
+                    actor_loss + cfg.V_coeff * critic_loss + cfg.E_coeff * entropy_loss
                 )
 
                 actor_optimizer.zero_grad(set_to_none=True)
@@ -874,9 +966,15 @@ def main():
         avg_valid_ratio = total_valid_ratio / num_updates if num_updates > 0 else 0.0
 
         # --- Logging ---
-        avg_ep_reward = np.mean(finished_episode_rewards) if finished_episode_rewards else 0.0
-        avg_ep_reversals = np.mean(finished_episode_reversals) if finished_episode_reversals else 0.0
-        avg_ep_obstacles = np.mean(finished_episode_obstacles) if finished_episode_obstacles else 0.0
+        avg_ep_reward = (
+            np.mean(finished_episode_rewards) if finished_episode_rewards else 0.0
+        )
+        avg_ep_reversals = (
+            np.mean(finished_episode_reversals) if finished_episode_reversals else 0.0
+        )
+        avg_ep_obstacles = (
+            np.mean(finished_episode_obstacles) if finished_episode_obstacles else 0.0
+        )
 
         print(
             f"Epoch {epoch}: Reward={avg_ep_reward:.2f}, Reversals={avg_ep_reversals:.2f}, "
@@ -909,7 +1007,9 @@ def main():
         tb_writer.add_scalar("Training/AverageReward", avg_ep_reward, epoch)
         tb_writer.add_scalar("Training/AvgFinalReversals", avg_ep_reversals, epoch)
         tb_writer.add_scalar("Training/EpisodesDone", finished_episode_count, epoch)
-        tb_writer.add_scalar("Training/ErrorTerminatedEpisodes", error_terminated_count, epoch)
+        tb_writer.add_scalar(
+            "Training/ErrorTerminatedEpisodes", error_terminated_count, epoch
+        )
         tb_writer.add_scalar("Training/AvgObstacles", avg_ep_obstacles, epoch)
         tb_writer.add_scalar("Loss/TotalLoss", avg_total_loss, epoch)
         tb_writer.add_scalar("Loss/ActorLossRaw", avg_actor_loss, epoch)
@@ -921,14 +1021,22 @@ def main():
         tb_writer.flush()
 
         if USE_VESSL:
-            vessl.log({"training_reward": avg_ep_reward, "training_reversal": avg_ep_reversals}, step=epoch)
+            vessl.log(
+                {
+                    "training_reward": avg_ep_reward,
+                    "training_reversal": avg_ep_reversals,
+                },
+                step=epoch,
+            )
 
         if epoch > 0 and epoch % cfg.save_every == 0:
-            torch.save(model.state_dict(), os.path.join(cfg.save_model_dir, f"checkpoint_epoch_{epoch}.pth"))
+            torch.save(
+                model.state_dict(),
+                os.path.join(cfg.save_model_dir, f"checkpoint_epoch_{epoch}.pth"),
+            )
 
         # --- 평가 루프 ---
         if epoch > 0 and epoch % cfg.eval_every == 0:
-
             train_rng_state = snapshot_rng_state()
             prev_initial_stock_ratio = cfg.initial_stock_ratio
 
@@ -956,7 +1064,7 @@ def main():
                             scenarios=build_fixed_anchor_eval_scenarios(),
                             episodes=NUM_EVAL_EPISODES,
                             seed_prefix=base_seed + int(ratio * 100),
-                            strategy=strategy
+                            strategy=strategy,
                         )
 
                         for name, nf, nt, obs, real_ppp, avg_score in fixed_details:
@@ -967,30 +1075,28 @@ def main():
                             tb_writer.add_scalar(
                                 f"EvalFixed_{combo_name}/{name}_Reversals",
                                 avg_score,
-                                epoch
+                                epoch,
                             )
 
                         tb_writer.add_scalar(
-                            f"EvalFixed_{combo_name}/Overall",
-                            fixed_overall,
-                            epoch
+                            f"EvalFixed_{combo_name}/Overall", fixed_overall, epoch
                         )
                         grand_overall_scores.append(fixed_overall)
 
                 final_grand_avg = np.mean(grand_overall_scores)
                 print(f"\n [Grand Eval Average]: {final_grand_avg:.2f}")
                 tb_writer.add_scalar(
-                    "EvaluationFixed/Grand_Overall_Reversals",
-                    final_grand_avg,
-                    epoch
+                    "EvaluationFixed/Grand_Overall_Reversals", final_grand_avg, epoch
                 )
 
                 if final_grand_avg < best_metric:
-                    print(f"New Best Model! ({best_metric:.2f} -> {final_grand_avg:.2f})")
+                    print(
+                        f"New Best Model! ({best_metric:.2f} -> {final_grand_avg:.2f})"
+                    )
                     best_metric = final_grand_avg
                     torch.save(
                         model.state_dict(),
-                        os.path.join(cfg.save_model_dir, "best_policy.pth")
+                        os.path.join(cfg.save_model_dir, "best_policy.pth"),
                     )
                 else:
                     print(f"  (Best so far: {best_metric:.2f})")
@@ -1013,8 +1119,13 @@ def main():
     test_scores = []
 
     for scenario in test_scenarios:
-        name = scenario['name']
-        nf, nt, target_ppp, obs = scenario['nf'], scenario['nt'], scenario['ppp'], scenario['obs']
+        name = scenario["name"]
+        nf, nt, target_ppp, obs = (
+            scenario["nf"],
+            scenario["nt"],
+            scenario["ppp"],
+            scenario["obs"],
+        )
         scenario_seed = base_seed + stable_name_seed(name) % 1000
         scenario_metrics = []
         real_ppp_logged = None
@@ -1022,8 +1133,13 @@ def main():
         for ep in range(test_episodes):
             set_seed(scenario_seed + ep)
             test_schedule, real_ppp = generate_schedule_from_scenario(
-                cfg=cfg, max_stack_limit=test_stack_limit, nf=nf, nt=nt,
-                target_ppp=target_ppp, obs=obs, s1_strategy="Random"
+                cfg=cfg,
+                max_stack_limit=test_stack_limit,
+                nf=nf,
+                nt=nt,
+                target_ppp=target_ppp,
+                obs=obs,
+                s1_strategy="Random",
             )
             real_ppp_logged = real_ppp
             if not test_schedule:
@@ -1031,27 +1147,37 @@ def main():
                 continue
 
             test_env = Locating(
-                max_stack=test_stack_limit, inbound_plates=test_schedule,
-                min_obstacles=obs, max_obstacles=obs,
+                max_stack=test_stack_limit,
+                inbound_plates=test_schedule,
+                min_obstacles=obs,
+                max_obstacles=obs,
                 observed_top_n_plates=cfg.OBSERVED_TOP_N_PLATES,
                 num_summary_stats_deeper=cfg.NUM_SUMMARY_STATS_DEEPER,
-                gamma=cfg.gamma, max_steps=cfg.max_steps
+                gamma=cfg.gamma,
+                max_steps=cfg.max_steps,
             )
-            _, test_metric, _ = evaluate_policy(model, [test_env], device, return_blocked=True)
-            scenario_metrics.append(test_metric if test_metric != float('inf') else 1000.0)
+            _, test_metric, _ = evaluate_policy(
+                model, [test_env], device, return_blocked=True
+            )
+            scenario_metrics.append(
+                test_metric if test_metric != float("inf") else 1000.0
+            )
 
         avg_score = np.mean(scenario_metrics) if scenario_metrics else 1000.0
         test_scores.append(avg_score)
-        print(f"  - [{name:<12}] {nf}->{nt} (Obs {obs}, PPP {real_ppp_logged}) | Rev: {avg_score:6.2f}")
+        print(
+            f"  - [{name:<12}] {nf}->{nt} (Obs {obs}, PPP {real_ppp_logged}) | Rev: {avg_score:6.2f}"
+        )
         tb_writer.add_scalar(f"Test/{name}_Reversals", avg_score, cfg.n_epoch)
 
-    final_test_avg = np.mean(test_scores) if test_scores else float('inf')
+    final_test_avg = np.mean(test_scores) if test_scores else float("inf")
     print(f"Final Test Avg Reversals: {final_test_avg:.2f}")
     tb_writer.add_scalar("Test/Overall_Avg_Reversals", final_test_avg, cfg.n_epoch)
 
     torch.save(model.state_dict(), os.path.join(cfg.save_model_dir, "final_policy.pth"))
     tb_writer.close()
     print("학습 완료.")
+
 
 if __name__ == "__main__":
     main()

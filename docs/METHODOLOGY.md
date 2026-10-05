@@ -4,7 +4,7 @@
 
 The public task transfers plates from source piles to destination piles. Each action moves one source top plate. Destination choice is flexible: `topile` identifies the destination pool, not a binding per-plate destination assignment. Pile geometry, crane collision, travel distance, plate dimensions and real operational safety constraints are outside the public model. `unitw` is carried as a data field but is not an enforced weight capacity constraint.
 
-Dynamic arrivals and outbound-date confirmation updates are supported by the uploaded environment. The current step implementation does not physically dispatch destination plates on their outbound dates. Dates express retrieval priority, and the episode ends when all source work and pending arrivals are cleared. Do not describe this as a complete outbound operations simulator.
+Dynamic arrivals are supported by the uploaded environment. Planned/confirmed outbound fields remain in the research data model, but the retained step implementation does not apply scheduled date confirmations or physically dispatch destination plates on their outbound dates. The public CSV loader rejects a nonempty `confirm_time` rather than silently ignoring it. Dates express retrieval priority, and the episode ends when all source work and pending arrivals are cleared.
 
 ## Blocking objective
 
@@ -37,7 +37,9 @@ This trainer is a new compact reproduction harness, not a claim that the origina
 
 ## Comparisons and fairness
 
-All public benchmark methods consume the same CSV sorted by source and pile sequence, use the same destination capacity and initialize without obstacle plates. Seeds and checkpoints are explicit. The demo uses a small search budget; SA and ACO have different iteration schedules and may stop on their iteration cap before consuming the time budget. ACO's budget checks and SA's whole-sequence evaluations can slightly exceed the nominal deadline. Gurobi's solver time omits model construction, whereas rule/PPO rollout times omit reset and model loading. Therefore runtime numbers are not end-to-end, equal-compute research comparisons.
+All public benchmark methods consume the same validated CSV sorted by source and pile sequence, use the same destination capacity and initialize without obstacle plates. Experimental metadata columns cannot override one solver's stack height or obstacles. Seeds and checkpoints are explicit; the benchmark seed also sets the Gurobi solver and warm-start RNG. The demo uses a small search budget; SA and ACO have different iteration schedules and may stop on their iteration cap before consuming the time budget. ACO's budget checks and SA's whole-sequence evaluations can slightly exceed the nominal deadline. Gurobi's solver time omits model construction, whereas rule/PPO rollout times omit reset and model loading. Therefore runtime numbers are not end-to-end, equal-compute research comparisons.
+
+SA now repairs invalid action genes deterministically and stores the executed feasible sequence. Its best sequence is replayed before reporting the score and actual move count. Partial or failed transfers do not receive a finite final objective. Benchmark output includes an explicit completion flag, and plotting filters failed or skipped runs. Source overflow detected at reset is terminal and cannot later be reported as successful clearing.
 
 | Method | Actual implementation | Public scope |
 |---|---|---|
@@ -46,7 +48,7 @@ All public benchmark methods consume the same CSV sorted by source and pile sequ
 | SOP–MFB | Uploaded shortest-outbound source / minimum final blocking destination | Static and dynamic arrivals |
 | SA | Mutated action sequences replayed through yard with feasibility handling | Public runner restricted to static |
 | ACO | Heuristic-seeded, heuristic-biased pheromone search | Static only; adapted implementation, not an independent paper reproduction |
-| Gurobi | Sequential binary MIP with source precedence and pairwise destination ordering | Static, no obstacles or dynamic confirmation |
+| Gurobi | Sequential binary MIP with source precedence and pairwise destination ordering | Static, no obstacles or scheduled date confirmations |
 | PPO | Greedy evaluation of locally trained checkpoint | Static and dynamic arrivals, same capacity as checkpoint |
 
 SA and ACO contain strong initialization or feasibility heuristics. Report this if using them in a paper. Gurobi termination status and optimality gap must accompany results. No research ranking or significance claim is derived from the smoke run. A proper experiment should use disjoint training/test seeds, multiple scenarios and model seeds, documented time budgets, completion rates, and dispersion of objective values.

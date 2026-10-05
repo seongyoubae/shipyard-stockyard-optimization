@@ -120,17 +120,17 @@ Action = Tuple[int, int]
 # 1. 기본 유틸
 # ============================================================
 
+
 def set_seed(seed: int) -> None:
     seed = int(seed)
     random.seed(seed)
-    np.random.seed(seed % (2 ** 32 - 1))
+    np.random.seed(seed % (2**32 - 1))
 
 
 def load_table(path: str, sheet_name: str = "reshuffle") -> pd.DataFrame:
     if not os.path.exists(path):
         raise FileNotFoundError(
-            f"Input file not found: {path}\n"
-            f"코드 상단 INPUT_PATH를 확인하세요."
+            f"Input file not found: {path}\n코드 상단 INPUT_PATH를 확인하세요."
         )
 
     ext = os.path.splitext(path)[1].lower()
@@ -168,6 +168,7 @@ def save_outputs(output_dir: str, results: pd.DataFrame, summary: pd.DataFrame) 
 # 2. DataFrame -> Plate 변환
 # ============================================================
 
+
 def row_to_plate(row: pd.Series) -> Any:
     markno = str(row.get("markno", row.name))
     inbound = int(row.get("inbound", 1))
@@ -178,7 +179,9 @@ def row_to_plate(row: pd.Series) -> Any:
         plate = Plate(id=markno, inbound=inbound, outbound=outbound, unitw=unitw)
     except Exception:
         try:
-            plate = Plate(markno=markno, inbound=inbound, outbound=outbound, unitw=unitw)
+            plate = Plate(
+                markno=markno, inbound=inbound, outbound=outbound, unitw=unitw
+            )
         except Exception:
             try:
                 plate = Plate(markno, inbound, outbound, unitw)
@@ -204,7 +207,9 @@ def row_to_plate(row: pd.Series) -> Any:
     return plate
 
 
-def scenario_to_plates(scenario_df: pd.DataFrame, force_static: bool = True) -> List[Any]:
+def scenario_to_plates(
+    scenario_df: pd.DataFrame, force_static: bool = True
+) -> List[Any]:
     df = scenario_df.copy()
 
     sort_cols = [c for c in ["pileno", "pileseq", "markno"] if c in df.columns]
@@ -257,6 +262,7 @@ def filter_static_0_percent(df: pd.DataFrame, experiment_id: str) -> pd.DataFram
 # ============================================================
 # 3. ACO
 # ============================================================
+
 
 @dataclass
 class ACOResult:
@@ -362,9 +368,11 @@ class WuStyleStaticACO:
         # ------------------------------------------------------------
         if USE_HEURISTIC_BASELINE:
             baseline_env = copy.deepcopy(reset_env)
-            baseline_seq, baseline_obj, baseline_info, baseline_reason = self._construct_greedy_baseline(
-                env=baseline_env,
-                safety_max_steps=safety_max_steps,
+            baseline_seq, baseline_obj, baseline_info, baseline_reason = (
+                self._construct_greedy_baseline(
+                    env=baseline_env,
+                    safety_max_steps=safety_max_steps,
+                )
             )
         else:
             baseline_seq = []
@@ -478,7 +486,9 @@ class WuStyleStaticACO:
                         or (ant_idx + 1) == self.n_ants
                     )
                 ):
-                    current_best = int(global_best_obj) if math.isfinite(global_best_obj) else -1
+                    current_best = (
+                        int(global_best_obj) if math.isfinite(global_best_obj) else -1
+                    )
                     print(
                         f"[Ant] {self.progress_label} | "
                         f"iter=0001/{self.n_iterations:04d} "
@@ -568,7 +578,9 @@ class WuStyleStaticACO:
                 )
 
         runtime = time.perf_counter() - start_time
-        final_blocking = int(global_best_obj) if math.isfinite(global_best_obj) else 10**12
+        final_blocking = (
+            int(global_best_obj) if math.isfinite(global_best_obj) else 10**12
+        )
         improvement_over_baseline = int(baseline_blocking - final_blocking)
 
         return ACOResult(
@@ -579,12 +591,10 @@ class WuStyleStaticACO:
             best_info=global_best_info,
             best_reason=global_best_reason,
             completed_iterations=completed_iterations,
-
             baseline_blocking=int(baseline_blocking),
             baseline_move_count=len(baseline_seq),
             baseline_reason=str(baseline_reason),
             improvement_over_baseline=int(improvement_over_baseline),
-
             n_ants=self.n_ants,
             n_iterations=self.n_iterations,
             rho=self.rho,
@@ -738,7 +748,7 @@ class WuStyleStaticACO:
             eta = self._heuristic(env, action)
             pheromone = max(float(tau[i, j]), self.tau_min)
 
-            weight = (pheromone ** alpha_t) * (eta ** beta_t)
+            weight = (pheromone**alpha_t) * (eta**beta_t)
 
             # baseline action은 확률 선택에서도 추가 가중치 부여
             if baseline_action is not None and action == baseline_action:
@@ -883,7 +893,8 @@ class WuStyleStaticACO:
 
         prob = (
             self.baseline_follow_prob_start
-            + (self.baseline_follow_prob_end - self.baseline_follow_prob_start) * progress
+            + (self.baseline_follow_prob_end - self.baseline_follow_prob_start)
+            * progress
         )
 
         return float(min(1.0, max(0.0, prob)))
@@ -905,6 +916,7 @@ class WuStyleStaticACO:
 # ============================================================
 # 4. 평가 실행
 # ============================================================
+
 
 def make_env_for_scenario(
     scenario_df: pd.DataFrame,
@@ -1002,7 +1014,6 @@ def evaluate_scenario_repeat(
         "scenario_index": int(first.get("scenario_index", -1)),
         "repeat_id": int(repeat_id),
         "eval_seed": int(eval_seed),
-
         "experiment_id": first.get("experiment_id", ""),
         "experiment_name": first.get("experiment_name", ""),
         "test_group": first.get("test_group", first.get("group", "")),
@@ -1014,7 +1025,6 @@ def evaluate_scenario_repeat(
         "scenario_type": first.get("scenario_type", ""),
         "inbound_pattern": first.get("inbound_pattern", ""),
         "outbound_pattern": first.get("outbound_pattern", ""),
-
         "nf": int(first.get("nf", scenario_df["pileno"].nunique())),
         "nt": int(first.get("nt", scenario_df["topile"].nunique())),
         "ppp": int(first.get("ppp", 0)),
@@ -1024,11 +1034,9 @@ def evaluate_scenario_repeat(
         "max_stack": int(max_stack),
         "safety_max_steps": int(effective_max_steps),
         "max_step_rule": f"initial_source_plates + {MAX_STEP_BUFFER}",
-
         "baseline_blocking": int(result.baseline_blocking),
         "baseline_move_count": int(result.baseline_move_count),
         "baseline_reason": str(result.baseline_reason),
-
         "final_blocking": int(result.final_blocking),
         "improvement_over_baseline": int(result.improvement_over_baseline),
         "runtime_sec": float(result.runtime_sec),
@@ -1036,7 +1044,6 @@ def evaluate_scenario_repeat(
         "move_count": int(result.move_count),
         "best_reason": result.best_reason,
         "completed_iterations": int(result.completed_iterations),
-
         "n_ants": int(result.n_ants),
         "n_iterations": int(result.n_iterations),
         "rho": float(result.rho),
@@ -1044,7 +1051,6 @@ def evaluate_scenario_repeat(
         "dynamic_alpha_beta": bool(result.dynamic_alpha_beta),
         "final_alpha": float(result.final_alpha),
         "final_beta": float(result.final_beta),
-
         "tau0": float(TAU0),
         "baseline_pheromone_weight": float(BASELINE_PHEROMONE_WEIGHT),
         "baseline_follow_prob_start": float(BASELINE_FOLLOW_PROB_START),
@@ -1074,24 +1080,19 @@ def summarize_results(results: pd.DataFrame) -> pd.DataFrame:
     ]
 
     summary = (
-        results
-        .groupby(group_cols, dropna=False)
+        results.groupby(group_cols, dropna=False)
         .agg(
             runs=("final_blocking", "count"),
             scenarios=("scenario_id", "nunique"),
-
             baseline_blocking_mean=("baseline_blocking", "mean"),
             baseline_blocking_min=("baseline_blocking", "min"),
             baseline_blocking_max=("baseline_blocking", "max"),
-
             final_blocking_mean=("final_blocking", "mean"),
             final_blocking_std=("final_blocking", "std"),
             final_blocking_min=("final_blocking", "min"),
             final_blocking_max=("final_blocking", "max"),
-
             improvement_over_baseline_mean=("improvement_over_baseline", "mean"),
             improvement_over_baseline_max=("improvement_over_baseline", "max"),
-
             runtime_mean_sec=("runtime_sec", "mean"),
             runtime_std_sec=("runtime_sec", "std"),
             move_count_mean=("move_count", "mean"),
@@ -1121,7 +1122,4 @@ def get_run_settings() -> Tuple[int, int, Optional[int], Optional[float]]:
         time_limit_sec = FULL_TIME_LIMIT_SEC
         return repeats, n_iterations, max_scenarios, time_limit_sec
 
-    raise ValueError(
-        f"Unknown RUN_MODE: {RUN_MODE}. "
-        f'Use "SINGLE_30MIN" or "FULL_600".'
-    )
+    raise ValueError(f'Unknown RUN_MODE: {RUN_MODE}. Use "SINGLE_30MIN" or "FULL_600".')

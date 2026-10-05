@@ -12,13 +12,15 @@ This repository is based on the user's uploaded master's research code. It is a 
 | `eval.network(1).py` | Single-scenario evaluation logic adapted to `stockyard/evaluation/policy.py`; hard-coded batch experiment runner excluded |
 | `heuristic(2).py` | `stockyard/baselines/heuristic.py`: rules retained; hard-coded main runner excluded |
 | `gurobi(2).py` | `stockyard/baselines/gurobi.py`: sequential MIP retained; dataset runner and import-time output writes excluded; solver warm-search time capped to requested budget |
-| `SA(3).py` | `stockyard/baselines/sa.py`: action-sequence search retained; hard-coded runner excluded |
+| `SA(3).py` | `stockyard/baselines/sa.py`: action-sequence search adapted with deterministic feasibility repair, complete-plan scoring and best-plan replay; hard-coded runner excluded |
 | `ACO(2).py` | `stockyard/baselines/aco.py`: heuristic-biased static ACO retained; hard-coded batch runner excluded |
 | `SA_move(1).py` | `stockyard/baselines/legacy/sa_move.py`: earlier implementation retained for provenance |
 | `SSY_SA(1).py` | `stockyard/baselines/legacy/annealer.py`: earlier annealer retained; standalone runner excluded |
 | `training_log.csv` | Excluded: the upload contains only its header, with no observed performance to publish |
 
 New public-facing additions: package structure, sample schema/generator, compact PPO trainer, common benchmark CLI, plotting CLI, synthetic visuals, documentation, dependency lists, tests and CI workflow. Do not present these additions as features independently verified in the original thesis.
+
+Final code review: unified Python formatting; removed unused imports and wildcard imports; repaired undefined names in the heuristic evaluation helper and legacy annealer; added explicit encoder validation and compatible aliases; repaired checkpoint boolean CLI flags; carried reset overflow into terminal status; strengthened CSV validation and evaluation completion checks. These are public maintenance changes. Date-confirmation behavior was corrected in the documentation to match the retained implementation; it was not added as a new simulation feature.
 
 No industrial raw dataset, industrial distribution quantiles, researcher contact information, hard-coded personal date seed, local machine path, license file or pretrained weight is included. Model and runtime outputs are ignored. The original uploads remain separate from this sanitized deliverable.
 
