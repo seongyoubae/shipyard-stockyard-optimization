@@ -1,59 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
-<title id="title">Retrieval interference: blocked plate versus directly accessible plate</title>
-<desc id="desc">Illustrative steel plate stacks handled by lifting magnets with top-only access. Left, the earliest-due plate, outbound day 10, is below plates with outbound days 30 and 20. These plates block retrieval. Right, plates are ordered bottom-to-top by days 30, 20, 10, so day 10 is directly accessible. This compares stacking examples, not measured algorithm results.</desc>
-<defs>
-<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#b8483f"/></marker>
-</defs>
-<rect x="1" y="1" width="1198" height="498" rx="16" fill="#fafaf7" stroke="#deded7"/>
-<g font-family="Inter, Segoe UI, Arial, sans-serif">
-<text x="46" y="47" font-size="12" letter-spacing="2" fill="#6b706c" font-weight="600">STEEL PLATE STOCKYARD</text>
-<text x="46" y="85" font-size="29" fill="#202b2b" font-weight="600">Retrieval interference</text>
-<text x="46" y="114" font-size="15" fill="#6b706c">An earlier-due plate can be blocked by the plates above it.</text>
-<line x1="600" y1="152" x2="600" y2="407" stroke="#dcded8"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="640" viewBox="0 0 1120 640" role="img" aria-labelledby="title desc">
+<title id="title">Example of retrieval interference in a steel plate stockyard</title>
+<desc id="desc">Left: the target plate with outbound day 10 is beneath plates with days 30 and 20, so the upper plates must be moved first. Right: the target plate with day 10 is at the top and lifted by a single suspended circular magnet. Dates describe illustrative orders, not measured policy results.</desc>
+<rect width="1120" height="640" rx="12" fill="#f6f7f8"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<text x="32" y="49" font-size="32" font-weight="600" fill="#253440">Retrieval interference</text>
+<text x="32" y="86" font-size="22" fill="#556571">The earliest-due plate is the target for retrieval.</text>
 
-<text x="48" y="167" fill="#b8483f" font-size="12" font-weight="600" text-anchor="start">01</text>
-<text x="81" y="167" fill="#263434" font-size="20" font-weight="600" text-anchor="start">Blocked retrieval</text>
-<text x="650" y="167" fill="#27766c" font-size="12" font-weight="600" text-anchor="start">02</text>
-<text x="683" y="167" fill="#263434" font-size="20" font-weight="600" text-anchor="start">Direct retrieval</text>
-<rect x="114" y="346" width="27" height="16" rx="2" fill="#526064"/>
-<rect x="319" y="346" width="27" height="16" rx="2" fill="#526064"/>
-<path d="M73 363H417" stroke="#ccd1cb" stroke-width="2"/>
-<path d="M89 334l38 -18h274l-38 18z" fill="#dcb773" stroke="#ffffff" stroke-width=".6"/><path d="M363 334l38 -18v12l-38 18z" fill="#976f2e"/><path d="M89 334h274v12H89z" fill="#b98837"/>
-<path d="M408 328h16" stroke="#b98837"/>
-<text x="432" y="333" fill="#996e2c" font-size="14" font-weight="600" text-anchor="start">Day 10</text>
-<path d="M89 320l38 -18h274l-38 18z" fill="#ded3d1" stroke="#ffffff" stroke-width=".6"/><path d="M363 320l38 -18v12l-38 18z" fill="#88736f"/><path d="M89 320h274v12H89z" fill="#ab9390"/>
-<path d="M408 314h16" stroke="#ab9390"/>
-<text x="432" y="319" fill="#717c7e" font-size="14" font-weight="400" text-anchor="start">Day 30</text>
-<path d="M89 306l38 -18h274l-38 18z" fill="#ded3d1" stroke="#ffffff" stroke-width=".6"/><path d="M363 306l38 -18v12l-38 18z" fill="#88736f"/><path d="M89 306h274v12H89z" fill="#ab9390"/>
-<path d="M408 300h16" stroke="#ab9390"/>
-<text x="432" y="305" fill="#717c7e" font-size="14" font-weight="400" text-anchor="start">Day 20</text>
-<path d="M245 184V275" fill="none" stroke="#51595b" stroke-width="1.5"/>
-<path d="M237 277L221 292H269L253 277Z" fill="#777e80" stroke="#353e42" stroke-width="1.2"/>
-<ellipse cx="245" cy="292" rx="24" ry="7" fill="#a58a34" stroke="#353e42" stroke-width="1.5"/><path d="M237 277V290M253 277V290" stroke="#4b5356" stroke-width="1"/>
-<path d="M441 286h-12v45h12" fill="none" stroke="#b8483f" stroke-width="1.6"/>
-<text x="461" y="284" fill="#b8483f" font-size="12" font-weight="500" text-anchor="start">Blocks access</text>
-<path d="M78 340h-16v39h55" fill="none" stroke="#b98837" stroke-width="1.4"/>
-<text x="126" y="384" fill="#996e2c" font-size="13" font-weight="600" text-anchor="start">Target plate: Day 10</text>
-<rect x="716" y="346" width="27" height="16" rx="2" fill="#526064"/>
-<rect x="921" y="346" width="27" height="16" rx="2" fill="#526064"/>
-<path d="M675 363H1019" stroke="#ccd1cb" stroke-width="2"/>
-<path d="M691 334l38 -18h274l-38 18z" fill="#cfd5d7" stroke="#ffffff" stroke-width=".6"/><path d="M965 334l38 -18v12l-38 18z" fill="#697780"/><path d="M691 334h274v12H691z" fill="#89959b"/>
-<path d="M1010 328h16" stroke="#89959b"/>
-<text x="1034" y="333" fill="#717c7e" font-size="14" font-weight="400" text-anchor="start">Day 30</text>
-<path d="M691 320l38 -18h274l-38 18z" fill="#cfd5d7" stroke="#ffffff" stroke-width=".6"/><path d="M965 320l38 -18v12l-38 18z" fill="#697780"/><path d="M691 320h274v12H691z" fill="#89959b"/>
-<path d="M1010 314h16" stroke="#89959b"/>
-<text x="1034" y="319" fill="#717c7e" font-size="14" font-weight="400" text-anchor="start">Day 20</text>
-<path d="M691 274l38 -18h274l-38 18z" fill="#dcb773" stroke="#ffffff" stroke-width=".6"/><path d="M965 274l38 -18v12l-38 18z" fill="#976f2e"/><path d="M691 274h274v12H691z" fill="#b98837"/>
-<path d="M1010 268h16" stroke="#b98837"/>
-<text x="1034" y="273" fill="#996e2c" font-size="14" font-weight="600" text-anchor="start">Day 10</text>
-<path d="M847 184V243" fill="none" stroke="#51595b" stroke-width="1.5"/>
-<path d="M839 245L823 260H871L855 245Z" fill="#777e80" stroke="#353e42" stroke-width="1.2"/>
-<ellipse cx="847" cy="260" rx="24" ry="7" fill="#a58a34" stroke="#353e42" stroke-width="1.5"/><path d="M839 245V258M855 245V258" stroke="#4b5356" stroke-width="1"/>
-<path d="M811 290V307M819 290V307M827 290V307" stroke="#b98837" stroke-width="1" stroke-dasharray="3 3" opacity=".6"/>
-<text x="847" y="301" fill="#27766c" font-size="12" font-weight="500" text-anchor="start">Day 10 retrieved first</text>
-<text x="126" y="416" fill="#65716e" font-size="14" font-weight="400" text-anchor="start">Later-due plates must be moved out of the way.</text>
-<text x="729" y="416" fill="#65716e" font-size="14" font-weight="400" text-anchor="start">The earliest-due plate is accessible from the top.</text>
-<line x1="46" y1="442" x2="1154" y2="442" stroke="#dcded8"/><rect x="46" y="462" width="14" height="8" rx="1" fill="#b98837"/>
-<text x="71" y="470" fill="#65716e" font-size="12" font-weight="400" text-anchor="start">Highlighted plate = earliest outbound date</text>
-<text x="1154" y="470" fill="#8a928c" font-size="11" font-weight="500" text-anchor="end">ILLUSTRATIVE EXAMPLE</text>
+<g transform="translate(28 118)"><rect width="508" height="456" rx="10" fill="#ffffff" stroke="#dce2e6"/>
+<text x="26" y="43" font-size="26" fill="#253440" font-weight="600">(a) Interference</text>
+<text x="26" y="79" font-size="22" fill="#91672d" font-weight="400">Target: outbound day 10</text>
+<path d="M31 350H348" stroke="#d0d8dd" stroke-width="2"/><rect x="70" y="328" width="27" height="21" fill="#5c6b72"/><rect x="258" y="328" width="27" height="21" fill="#5c6b72"/>
+<path d="M45 308l42 -18h248l-42 18z" fill="#e6c28b"/><path d="M293 308l42 -18v20l-42 18z" fill="#90692f"/><path d="M45 308h248v20H45z" fill="#b48239" stroke="#ffffff" stroke-width=".8"/>
+<path d="M45 286l42 -18h248l-42 18z" fill="#d8ccca"/><path d="M293 286l42 -18v20l-42 18z" fill="#87706c"/><path d="M45 286h248v20H45z" fill="#a9908c" stroke="#ffffff" stroke-width=".8"/>
+<path d="M45 264l42 -18h248l-42 18z" fill="#d8ccca"/><path d="M293 264l42 -18v20l-42 18z" fill="#87706c"/><path d="M45 264h248v20H45z" fill="#a9908c" stroke="#ffffff" stroke-width=".8"/>
+<path d="M190 99V229" stroke="#4e5f69" stroke-width="1.8"/>
+<path d="M180 231L162 247H218L200 231Z" fill="#8b9599" stroke="#3e4c53" stroke-width="1.5"/><ellipse cx="190" cy="248" rx="28" ry="8" fill="#a58a42" stroke="#3e4c53" stroke-width="1.5"/><path d="M180 231V245M200 231V245" stroke="#526269"/>
+<path d="M343 256H355L369 239" fill="none" stroke="#516572" stroke-width="1.5"/>
+<text x="380" y="247" font-size="24" fill="#516572" font-weight="400">Day 20</text>
+<path d="M343 278H355L369 293" fill="none" stroke="#516572" stroke-width="1.5"/>
+<text x="380" y="301" font-size="24" fill="#516572" font-weight="400">Day 30</text>
+<path d="M343 300H355L369 347" fill="none" stroke="#91672d" stroke-width="1.5"/>
+<text x="380" y="355" font-size="24" fill="#91672d" font-weight="600">Day 10</text>
+<line x1="26" y1="383" x2="482" y2="383" stroke="#e1e6e9"/>
+<text x="26" y="423" font-size="24" fill="#3e5b66" font-weight="400">Move the upper plates first</text>
+</g>
+<g transform="translate(584 118)"><rect width="508" height="456" rx="10" fill="#ffffff" stroke="#dce2e6"/>
+<text x="26" y="43" font-size="26" fill="#253440" font-weight="600">(b) No interference</text>
+<text x="26" y="79" font-size="22" fill="#91672d" font-weight="400">Target: outbound day 10</text>
+<path d="M31 350H348" stroke="#d0d8dd" stroke-width="2"/><rect x="70" y="328" width="27" height="21" fill="#5c6b72"/><rect x="258" y="328" width="27" height="21" fill="#5c6b72"/>
+<path d="M45 308l42 -18h248l-42 18z" fill="#cdd5da"/><path d="M293 308l42 -18v20l-42 18z" fill="#5e7380"/><path d="M45 308h248v20H45z" fill="#82939f" stroke="#ffffff" stroke-width=".8"/>
+<path d="M45 286l42 -18h248l-42 18z" fill="#cdd5da"/><path d="M293 286l42 -18v20l-42 18z" fill="#5e7380"/><path d="M45 286h248v20H45z" fill="#82939f" stroke="#ffffff" stroke-width=".8"/>
+<path d="M45 207l42 -18h248l-42 18z" fill="#e6c28b"/><path d="M293 207l42 -18v20l-42 18z" fill="#90692f"/><path d="M45 207h248v20H45z" fill="#b48239" stroke="#ffffff" stroke-width=".8"/>
+<path d="M190 99V172" stroke="#4e5f69" stroke-width="1.8"/>
+<path d="M180 174L162 190H218L200 174Z" fill="#8b9599" stroke="#3e4c53" stroke-width="1.5"/><ellipse cx="190" cy="191" rx="28" ry="8" fill="#a58a42" stroke="#3e4c53" stroke-width="1.5"/><path d="M180 174V188M200 174V188" stroke="#526269"/>
+<path d="M343 199H355L369 208" fill="none" stroke="#91672d" stroke-width="1.5"/>
+<text x="380" y="216" font-size="24" fill="#91672d" font-weight="600">Day 10</text>
+<path d="M343 278H355L369 286" fill="none" stroke="#516572" stroke-width="1.5"/>
+<text x="380" y="294" font-size="24" fill="#516572" font-weight="400">Day 20</text>
+<path d="M343 300H355L369 347" fill="none" stroke="#516572" stroke-width="1.5"/>
+<text x="380" y="355" font-size="24" fill="#516572" font-weight="400">Day 30</text>
+<path d="M169 239V267M183 239V267M197 239V267" stroke="#b48239" stroke-width="1.4" stroke-dasharray="5 5"/>
+<line x1="26" y1="383" x2="482" y2="383" stroke="#e1e6e9"/>
+<text x="26" y="423" font-size="24" fill="#3e5b66" font-weight="400">Lift the target plate directly</text>
+</g>
+<rect x="32" y="600" width="20" height="13" rx="1" fill="#b48239"/>
+<text x="64" y="615" font-size="22" fill="#556571" font-weight="400">Target plate</text>
+<text x="917" y="615" font-size="20" fill="#70808b" font-weight="400">Example</text>
 </g></svg>
