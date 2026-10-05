@@ -8,7 +8,14 @@ Dynamic arrivals are supported by the uploaded environment. Planned/confirmed ou
 
 ## Blocking objective
 
-For each destination pile listed bottom-to-top, count pairs `(i,j)` satisfying `i < j` and `outbound[i] < outbound[j]`. Sum over destination piles. Equal dates contribute zero. Blocking pairs measure order interference; actual relocation counts depend on the dispatch procedure.
+For each destination pile listed bottom-to-top, count pairs $(i,j)$ satisfying $i < j$ and $d_{p,i} < d_{p,j}$:
+
+```math
+B = \sum_{p\in\mathcal{P}} \sum_{1\le i<j\le n_p}
+\mathbf{1}\!\left[d_{p,i}<d_{p,j}\right]
+```
+
+Here $\mathcal{P}$ is the set of destination piles, $n_p$ is the number of plates in pile $p$, and $d_{p,i}$ is the outbound date at bottom-to-top position $i$. The indicator is one when the lower plate is due earlier, and zero otherwise. Equal dates contribute zero. Blocking pairs measure order interference; actual relocation counts depend on the dispatch procedure.
 
 ## State and action
 
@@ -20,12 +27,27 @@ The retained network provides source/destination heads. Its `act_batch` sampling
 
 ## Reward in the uploaded environment
 
-Let `B_before`, `B_after` be destination blocking counts. Define `new_pairs` as earlier-due plates below the just-placed plate and `severity = sum(1 + 0.1 * due_gap)` over those plates.
+Let $B_{\mathrm{before}}$ and $B_{\mathrm{after}}$ be destination blocking counts. Let $\mathcal{N}_t$ contain the earlier-due plates below the just-placed plate, $N_t = \lvert\mathcal{N}_t\rvert$ be the new-pair count, and $\Delta d_j$ be the positive outbound-date gap to plate $j$ in the environment's date units. The source's `severity` and step reward are:
 
-- Step reward: `B_before - B_after - 0.5 * severity - 2 * new_pairs`
-- Successful terminal reward: `10 - 100 * blocking_ratio`
-- `blocking_ratio`: final pairs divided by `max(1, sum(n_pile*(n_pile-1)/2))`
-- Overflow receives the environment's terminal overflow penalty
+```math
+\begin{aligned}
+S_t &= \sum_{j\in\mathcal{N}_t} \left(1 + 0.1\,\Delta d_j\right) \\
+r_t^{\mathrm{step}} &= B_{\mathrm{before}} - B_{\mathrm{after}}
+                     - 0.5\,S_t - 2\,N_t
+\end{aligned}
+```
+
+On successful completion, the blocking ratio and terminal reward are:
+
+```math
+\begin{aligned}
+C_{\max} &= \max\!\left(1,\sum_{p\in\mathcal{P}}\frac{n_p(n_p-1)}{2}\right) \\
+\rho &= \frac{B_{\mathrm{final}}}{C_{\max}} \\
+r^{\mathrm{terminal}} &= 10 - 100\,\rho
+\end{aligned}
+```
+
+Overflow receives the environment's terminal overflow penalty.
 
 The current potential term is an undiscounted difference; configuration fields named `gamma` or reward weights do not imply that the step implementation applies discounted potential shaping. Several legacy configuration fields are retained for compatibility and are not all active in the reward.
 
