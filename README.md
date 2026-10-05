@@ -2,87 +2,135 @@
 
 # Shipyard Stockyard Optimization
 
-### 조선소 강재 재배치의 반출 간섭 최소화를 위한 강화학습
+### Deep Reinforcement Learning for Minimizing Retrieval Interference in Steel Plate Stockyards
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)
 ![PPO](https://img.shields.io/badge/Reinforcement%20Learning-PPO-2563EB?style=flat-square)
+[![Public sample validation](https://github.com/seongyoubae/shipyard-stockyard-optimization/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/seongyoubae/shipyard-stockyard-optimization/actions/workflows/ci.yml)
 
-석사과정에서 수행한 강재 적치장 최적화 연구의 코드와 실행 예제
+**M.S. research project · Shipbuilding production optimization · Python / PyTorch / PPO**
 
 </div>
 
+## At a Glance
+
+This project develops a reinforcement learning framework for steel plate reshuffling in shipyard stockyards.
+
+- **Problem** — Minimize retrieval-order interference caused by unfavorable stacking
+- **Decision** — Select a source pile and destination pile for each top-plate transfer
+- **Model** — Priority-aware GRU encoder with an actor–critic network
+- **Learning** — Proximal Policy Optimization (PPO) with Generalized Advantage Estimation (GAE)
+- **Comparisons** — Random and rule-based policies, Simulated Annealing, Ant Colony Optimization, and Gurobi MIP
+- **Evaluation** — Blocking pairs, plate transfers, runtime, and completion status
+- **Data** — Reproducible synthetic scenarios; industrial raw data and trained research checkpoints are excluded
+
 ## Overview
 
-조선소에서는 강재를 여러 층으로 쌓아 보관하고, 생산 일정에 따라 필요한 강재를 반출합니다. 이때 먼저 반출할 강재가 아래에 있고 나중에 반출할 강재가 위에 있으면, 위의 강재를 다른 곳으로 옮기는 작업이 필요합니다. 이러한 **반출 간섭**은 적치 순서에 따라 달라집니다.
+Steel plates in shipyards are temporarily stored in multi-layer piles before retrieval according to production schedules. When an earlier-due plate is buried beneath later-due plates, additional handling may be required. Stacking decisions therefore affect future retrieval interference.
 
-이 연구는 출발지에 쌓인 강재를 도착지로 재배치할 때, **이동 순서와 도착지 선택을 함께 결정해 이후 반출 간섭을 줄이는 문제**를 다룹니다. 적치장 환경을 구현하고, 반출 우선순위를 반영한 GRU와 PPO를 사용해 이동 정책을 학습합니다. 규칙 기반 방법, SA, ACO, Gurobi MIP와 비교할 수 있는 평가 코드도 포함합니다.
+This project formulates reshuffling as a sequential decision problem: select a top plate from a source pile and assign it to a feasible destination pile while considering retrieval priorities and the current stockyard state. A priority-aware GRU-based actor–critic model is trained with PPO, and alternative algorithms are evaluated through a common benchmark interface.
+
+> **Objective:** minimize final retrieval-order interference while satisfying top-only movement and destination stack-height constraints.
 
 ![Example of steel plate retrieval interference](docs/stockyard.svg)
 
-*반출일이 빠른 강재가 아래에 묻힌 경우와, 최상단에서 바로 반출할 수 있는 경우의 비교 예시*
+*An earlier-due target plate requires access through upper plates when buried; placing it on top allows direct retrieval. This illustration explains interference rather than simulating outbound dispatch.*
+
+## What I Implemented
+
+The research implementation connects stockyard simulation, state representation, and policy learning:
+
+- Stockyard environment with top-only movement, stack-height constraints, and dynamic arrivals
+- State features for retrieval priorities, pile conditions, upcoming arrivals, time, and blocking information
+- Priority-aware GRU encoder and actor–critic network, with alternative encoder and priority-fusion variants
+- Action masks for empty sources, padded piles, and full destinations
+- PPO research training flow and heuristic, SA, ACO, and sequential Gurobi MIP implementations
+
+The public repository adds a compact CPU PPO runner, a synthetic scenario generator, a common benchmark and plotting interface, input validation, automated tests, and a CI workflow. These additions support reproducible execution of the public adaptation. The [provenance document](docs/PROVENANCE.md) distinguishes retained research code from public additions and maintenance changes.
 
 ## Problem Definition
 
-강재는 각 pile에 아래에서 위 순서로 적치되어 있습니다. 크레인은 출발지 pile의 최상단 강재를 선택해 도착지 pile에 놓습니다. 이 과정을 반복해 출발지의 강재를 이전합니다.
+Each pile stores plates from bottom to top. A crane transfers one source top plate to a destination pile, repeating until all source plates and pending arrivals are cleared.
 
-| 항목 | 문제 설정 |
+| Item | Definition |
 | :--- | :--- |
-| 결정할 내용 | 어느 출발지의 최상단 강재를 어느 도착지로 옮길지 |
-| 이동 제약 | 최상단 강재만 이동 가능 |
-| 적재 제약 | 도착지 pile의 최대 적재 높이 준수 |
-| 목적 | 재배치 완료 후 도착지의 반출 간섭 최소화 |
-| 주 지표 | 아래 강재의 반출일이 위 강재보다 빠른 조합의 수, 즉 blocking pairs |
+| Decision | Which source top plate to move and which destination pile to use |
+| Movement constraint | Only the top plate of a source pile can be moved |
+| Capacity constraint | Destination piles must respect the maximum stack height |
+| Objective | Minimize destination blocking pairs after reshuffling |
+| Blocking pair | A lower plate has an earlier retrieval date than an upper plate in the same pile; equal dates do not count |
 
-단순히 반출일 순서대로 강재를 나열하는 것만으로는 해결할 수 없습니다. 출발지에서는 최상단 강재부터 꺼내야 하고, 도착지에 한 번 놓은 강재는 다음 강재의 적치 상태에 영향을 주기 때문입니다. 따라서 현재 가능한 이동뿐 아니라 남은 강재와 도착지 상태까지 고려해야 합니다.
+A simple sort by retrieval date is insufficient: source access is constrained by the existing stack, and each destination choice changes the options for subsequent placements.
+
+**Blocking pairs measure retrieval-order interference, not the actual number of additional crane moves.** The public environment supports dynamic arrivals, but does not physically dispatch destination plates on their outbound dates. Retrieval dates express priority; geometry, crane travel distance, collision avoidance, and weight capacity are outside the public model.
 
 ## Method
 
-### Stockyard environment
+### 1. Stockyard Environment
 
-출발지·도착지 pile과 강재의 입고·반출 정보를 관리하는 환경을 구현했습니다. 상태에는 상단 강재의 반출일, 깊은 층의 요약 통계, 예정 입고 정보, 시간과 간섭 정보를 포함합니다.
+The environment represents source and destination piles and exposes pile-level retrieval, arrival, and blocking features. An action is a pair `(source_pile, destination_pile)`; infeasible choices are excluded through action masks. Idle periods in dynamic scenarios advance to the next arrival.
 
-출발지가 비어 있거나 도착지의 적재 높이가 한계에 도달한 경우 해당 선택을 행동 마스크로 제외합니다. 동적 입고 시나리오에서는 시간에 따라 새 강재가 출발지에 도착하며, 입고 대기 중에는 다음 입고 시점으로 진행합니다.
+Rewards reflect changes in interference, newly created blocking pairs, and retrieval-date gaps, together with a terminal blocking-ratio term.
 
-### Priority-aware GRU
+### 2. Priority-aware GRU
 
-반출일은 강재의 작업 우선순위를 결정하는 주요 정보입니다. 모델은 pile 상태의 embedding에 상단 강재의 반출 우선순위 표현을 결합하고, GRU로 pile 간 정보를 처리합니다.
+The encoder combines pile embeddings with an explicit representation of the top plate's retrieval priority. A bidirectional GRU processes the sequence of pile representations to capture context across piles.
 
-이 표현을 사용해 actor는 출발지와 도착지를 선택하고, critic은 상태 가치를 추정합니다. 코드에는 기본 GRU·LSTM·MLP·attention과 우선순위 결합 방식의 변형도 포함되어 있어 encoder 구성을 비교할 수 있습니다.
+The actor has source and destination selection heads, and the critic estimates state value. The GRU processes piles within a state, rather than an episode's temporal history.
 
-### PPO training
+### 3. PPO
 
-이동 전후의 간섭 변화와 새로 생성된 간섭, 반출일 차이를 보상에 반영합니다. 학습에는 PPO의 clipped objective와 GAE를 사용하며, 가치함수 손실과 entropy 항을 함께 계산합니다.
+PPO training uses GAE, a clipped policy objective, value-function loss, and entropy regularization.
 
-학습 코드는 두 가지 경로로 제공합니다.
-
-| 코드 | 용도 |
+| Training path | Purpose |
 | :--- | :--- |
-| [`training/research_train.py`](stockyard/training/research_train.py) | 원본 연구의 병렬 rollout, 학습 및 시나리오 평가 흐름 |
-| [`training/ppo.py`](stockyard/training/ppo.py) | 동일 환경·네트워크를 사용하는 소규모 CPU 실행 예제 |
+| [`research_train.py`](stockyard/training/research_train.py) | Retained research training flow with parallel rollouts and evaluation adapter repairs |
+| [`ppo.py`](stockyard/training/ppo.py) | Compact CPU demonstration using the same environment and network |
 
-상태 구성, 보상 식과 모델의 세부 동작은 [방법론 문서](docs/METHODOLOGY.md)에 설명했습니다.
+See [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) for the exact state representation, reward, action distributions, and public implementation scope.
 
-## Baselines & Evaluation
+## Results
 
-공통 입력과 평가 지표를 사용해 다음 방법들을 실행할 수 있습니다.
+The public example demonstrates execution and integration. It does not reproduce the full industrial research experiment or establish algorithm superiority.
 
-| 방법 | 구현 내용 |
+The [validation record](docs/VALIDATION.md) documents the following local execution checks:
+
+| Check | Recorded outcome |
 | :--- | :--- |
-| Random | 이동 가능한 출발지·도착지의 무작위 선택 |
-| EDD–MOD / SOP–MFB | 반출 우선순위와 간섭을 고려하는 규칙 기반 선택 |
-| PPO + Priority-aware GRU | 학습된 정책으로 출발지·도착지 선택 |
-| Simulated Annealing | 이동 행동 시퀀스를 변형하고 평가하며 해 탐색 |
-| Ant Colony Optimization | 휴리스틱 초기해와 페로몬을 활용한 탐색 |
-| Gurobi MIP | 출발지 이동 순서와 도착지 적치 순서를 반영한 수리최적화 |
+| Static synthetic example | All six methods—Random, EDD–MOD, SOP–MFB, SA, ACO, and PPO—completed 24 transfers and returned finite objectives |
+| Compact PPO training | Two updates produced finite losses and a checkpoint loaded by the benchmark |
+| Dynamic arrivals | Random, EDD–MOD, SOP–MFB, and PPO completed; static-only methods were skipped |
+| Tiny Gurobi example | Four-plate instance solved with objective zero, Optimal status, and zero gap |
 
-평가 결과는 **최종 blocking pairs, 이동 수, 실행시간, 종료 상태**로 기록합니다. 완료 여부와 seed, 적재 높이, 강재 수도 함께 저장하며, 그래프에는 완료된 결과만 표시합니다. Gurobi는 종료 상태와 optimality gap도 확인할 수 있습니다. 공개 benchmark에서 SA·ACO·Gurobi는 정적 시나리오를 대상으로 합니다.
+A two-update policy is an execution example. No thesis improvement percentage, research ranking, or statistical significance claim is inferred from these checks. Full thesis results are not reproduced because the industrial dataset and trained research checkpoints are not publicly distributed.
 
-Blocking pairs는 반출 순서의 간섭 정도를 나타내는 지표입니다. 실제 추가 크레인 이동 횟수와 동일한 값으로 해석하지 않습니다.
+## Benchmark Algorithms
+
+All methods consume the same validated scenario input and destination capacity.
+
+| Method | Implementation | Public scenario scope |
+| :--- | :--- | :--- |
+| Random | Random feasible source and destination selection | Static and dynamic arrivals |
+| EDD–MOD / SOP–MFB | Retrieval-priority and interference-based rules | Static and dynamic arrivals |
+| PPO + Priority-aware GRU | Greedy evaluation of a locally trained checkpoint | Static and dynamic arrivals |
+| Simulated Annealing | Action-sequence search with feasibility repair and best-plan replay | Static |
+| Ant Colony Optimization | Heuristic-seeded, heuristic-biased pheromone search | Static |
+| Gurobi MIP | Sequential binary model with source precedence and destination ordering | Static |
+
+### Evaluation Metrics
+
+- **Blocking pairs** — Final retrieval-order interference
+- **Crane moves** — Number of source-to-destination plate transfers
+- **Runtime** — Method-specific execution time reported by the benchmark
+- **Completion** — Whether all required source plates were successfully transferred
+- **Solver status and MIP gap** — Reported for Gurobi where available
+
+Output also records the seed, stack height, and plate count. Plots include completed runs only. Runtime boundaries and search schedules differ between methods, so demo timings are not an equal-compute research comparison. See the [comparison notes](docs/METHODOLOGY.md#comparisons-and-fairness) before interpreting benchmark results.
 
 ## Quick Start
 
-Python 3.10 이상에서 저장소를 내려받아 루트 디렉터리에서 실행합니다.
+The following commands run a small CPU-friendly demonstration using synthetic data. Use Python 3.10 or later and run them from the repository root.
 
 ```bash
 git clone https://github.com/seongyoubae/shipyard-stockyard-optimization.git
@@ -95,30 +143,32 @@ source .venv/bin/activate
 
 python -m pip install -r requirements.txt
 
-# 1. 합성 시나리오 생성
+# 1. Generate a synthetic scenario
 python -m stockyard.data.sample --seed 42
 
-# 2. PPO 소규모 학습
+# 2. Run a short PPO training example
 python -m stockyard.training.ppo --updates 2 --horizon 32
 
-# 3. 정책 및 baseline 평가
+# 3. Evaluate the policy and baselines
 python -m stockyard.evaluation.benchmark --methods random edd-mod sop-mfb sa aco ppo
 
-# 4. 평가 결과 시각화
+# 4. Plot benchmark results
 python -m stockyard.analysis.plot
 ```
 
-기본 예제는 강재 24장, 출발지 4개, 도착지 4개입니다. 위 명령의 2회 업데이트는 실행 확인용이며, 충분히 학습된 정책의 성능 평가와는 구분합니다.
+The default scenario contains 24 plates, four source piles, and four destination piles. Two PPO updates verify execution; they do not produce a policy suitable for research performance claims.
 
-| 생성 파일 | 내용 |
+| Generated file | Contents |
 | :--- | :--- |
-| `outputs/policy.pt` | 학습한 모델의 체크포인트 |
-| `outputs/training.csv` | 학습 로그 |
-| `outputs/benchmark.csv` | 방법별 평가 결과 |
-| `outputs/benchmark.svg` | 평가 결과 그래프 |
+| `outputs/policy.pt` | Locally trained model checkpoint |
+| `outputs/training.csv` | Training log |
+| `outputs/benchmark.csv` | Per-method evaluation results |
+| `outputs/benchmark.svg` | Benchmark plot |
 
 <details>
-<summary><strong>동적 입고 예제</strong></summary>
+<summary><strong>Dynamic arrival example</strong></summary>
+
+Run after the quick start has created the PPO checkpoint.
 
 ```bash
 python -m stockyard.data.sample --dynamic --output outputs/dynamic.csv
@@ -128,7 +178,7 @@ python -m stockyard.evaluation.benchmark --data outputs/dynamic.csv --methods ra
 </details>
 
 <details>
-<summary><strong>Gurobi 실행</strong></summary>
+<summary><strong>Gurobi example</strong></summary>
 
 ```bash
 python -m pip install -r requirements-gurobi.txt
@@ -136,29 +186,29 @@ python -m stockyard.data.sample --sources 2 --destinations 2 --plates-per-source
 python -m stockyard.evaluation.benchmark --data outputs/tiny.csv --methods gurobi --budget-seconds 2
 ```
 
-유효한 Gurobi 라이선스가 필요합니다. 라이선스에 따라 실행할 수 있는 모델 크기가 달라집니다.
+A valid Gurobi license is required. Supported model size depends on the license.
 
 </details>
 
-## Code Structure
+## Repository Structure
 
-| 경로 | 역할 |
+| Path | Purpose |
 | :--- | :--- |
-| [`stockyard/environment/`](stockyard/environment/) | 적치장 상태, 이동 제약, 행동 마스크, 보상·종료 |
-| [`stockyard/models/`](stockyard/models/) | GRU 및 encoder 변형, actor–critic |
-| [`stockyard/training/`](stockyard/training/) | 연구 학습 코드와 CPU용 PPO 예제 |
-| [`stockyard/baselines/`](stockyard/baselines/) | Heuristic, SA, ACO, Gurobi |
-| [`stockyard/evaluation/`](stockyard/evaluation/) | 정책 rollout과 공통 benchmark |
-| [`stockyard/data/`](stockyard/data/) | 강재 모델, 합성 데이터 생성·로딩 |
-| [`stockyard/analysis/`](stockyard/analysis/) | 결과 시각화 |
-| [`tests/`](tests/) | 환경 제약, 간섭 계산, GAE, 모델·평가 연결 검증 |
-| [`docs/`](docs/) | 방법론, 원본 코드와의 대응 관계, 검증 기록 |
+| [`stockyard/environment/`](stockyard/environment/) | Yard state, movement constraints, masks, rewards, and termination |
+| [`stockyard/models/`](stockyard/models/) | GRU and alternative encoders, actor–critic network |
+| [`stockyard/training/`](stockyard/training/) | Research training flow and compact CPU PPO runner |
+| [`stockyard/baselines/`](stockyard/baselines/) | Heuristics, SA, ACO, and Gurobi |
+| [`stockyard/evaluation/`](stockyard/evaluation/) | Policy rollouts and common benchmark |
+| [`stockyard/data/`](stockyard/data/) | Plate model, synthetic generation, and validated input loading |
+| [`stockyard/analysis/`](stockyard/analysis/) | Result visualization |
+| [`tests/`](tests/) | Environment, input, GAE, baseline, and model integration checks |
+| [`docs/`](docs/) | Methodology, schema, provenance, and validation record |
 
-코드를 살펴볼 때는 [환경](stockyard/environment/yard.py), [네트워크](stockyard/models/network.py), [학습](stockyard/training/ppo.py), [평가](stockyard/evaluation/benchmark.py) 순서로 보면 전체 흐름을 확인할 수 있습니다.
+Suggested code reading order: [environment](stockyard/environment/yard.py), [network](stockyard/models/network.py), [training](stockyard/training/ppo.py), and [benchmark](stockyard/evaluation/benchmark.py).
 
-## Validation
+## Engineering Validation
 
-환경 제약과 GAE, CSV 입력 검증, SA 계획 재실행, encoder 변형 및 모델·평가 연결을 확인하는 **48개 테스트**를 제공합니다. 합성 데이터 생성부터 PPO 짧은 학습, baseline 실행, 결과 시각화까지 로컬에서 확인했습니다. 원본 연구 학습 코드도 작은 설정으로 실행했고, Gurobi는 강재 4장의 소규모 예제를 확인했습니다.
+The [validation record](docs/VALIDATION.md) reports **48 passing automated tests** covering movement and capacity constraints, blocking calculations, dynamic arrivals, GAE, CSV validation, baseline replay, encoder variants, and model–evaluation integration.
 
 ```bash
 python -m pip install -r requirements-dev.txt
@@ -167,13 +217,29 @@ python -m ruff check stockyard tests
 python -m ruff format --check stockyard tests
 ```
 
-GitHub Actions에는 테스트와 예제 실행 workflow를 구성했습니다. 실행 환경과 검증 범위는 [검증 기록](docs/VALIDATION.md)에서 확인할 수 있습니다.
+The [GitHub Actions workflow](.github/workflows/ci.yml) runs tests, Ruff checks, synthetic data generation, short PPO training, benchmark execution, and plotting on Python 3.11. Its current status is available in the [Actions tab](https://github.com/seongyoubae/shipyard-stockyard-optimization/actions).
 
 ## Data & Documentation
 
-실제 조선소 데이터와 연구 체크포인트는 공개하지 않고, 독립적으로 생성한 합성 데이터를 제공합니다. 원본 연구 구현과 공개 실행을 위해 추가한 코드는 [구현 이력](docs/PROVENANCE.md)에 구분해 정리했습니다.
+Public examples use independently generated synthetic data. See these documents for implementation details and reproducibility boundaries:
 
-- [문제 정의와 방법론](docs/METHODOLOGY.md)
-- [샘플 데이터와 평가 결과 형식](docs/DATA_SCHEMA.md)
-- [원본 코드 및 공개용 수정 사항](docs/PROVENANCE.md)
-- [실행 검증 기록](docs/VALIDATION.md)
+- [Problem definition and methodology](docs/METHODOLOGY.md)
+- [Sample data and evaluation output schema](docs/DATA_SCHEMA.md)
+- [Research code provenance and public changes](docs/PROVENANCE.md)
+- [Execution validation record](docs/VALIDATION.md)
+
+## Research Context
+
+This repository is a public adaptation of a master's research project in shipyard production optimization. The original research used industrial shipyard data; raw industrial records, trained research checkpoints, and proprietary information are excluded.
+
+The public adaptation retains the research environment and network with documented repairs, and provides synthetic scenarios and a compact execution workflow. Public additions and modifications are listed in [`docs/PROVENANCE.md`](docs/PROVENANCE.md).
+
+## Author
+
+**Seongyou Bae**
+
+M.S. in Naval Architecture and Ocean Engineering  
+Seoul National University
+
+Former Marine Engineer  
+Interests: Maritime AI · Industrial Optimization · Reinforcement Learning
